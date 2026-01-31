@@ -164,9 +164,20 @@ jobs:
     
     - name: Run OSV Scanner
       run: |
-        curl -sSfL https://github.com/google/osv-scanner/releases/download/v2.3.2/osv-scanner_linux_amd64 -o osv-scanner
-        curl -sSfL https://github.com/google/osv-scanner/releases/download/v2.3.2/osv-scanner_SHA256SUMS -o osv-scanner_SHA256SUMS
-        echo "$(grep osv-scanner_linux_amd64 osv-scanner_SHA256SUMS | awk '{print $1}')  osv-scanner" | sha256sum -c -
+        set -e
+        VERSION=v2.3.2
+        curl -sSfL --max-time 60 --retry 3 \
+          "https://github.com/google/osv-scanner/releases/download/${VERSION}/osv-scanner_linux_amd64" \
+          -o osv-scanner
+        curl -sSfL --max-time 60 --retry 3 \
+          "https://github.com/google/osv-scanner/releases/download/${VERSION}/osv-scanner_SHA256SUMS" \
+          -o osv-scanner_SHA256SUMS
+        CHECKSUM=$(grep osv-scanner_linux_amd64 osv-scanner_SHA256SUMS | awk '{print $1}')
+        if [ -z "$CHECKSUM" ]; then
+          echo "Error: Could not find checksum for osv-scanner_linux_amd64"
+          exit 1
+        fi
+        echo "${CHECKSUM}  osv-scanner" | sha256sum -c -
         chmod +x osv-scanner
         ./osv-scanner --recursive ./
       continue-on-error: true
