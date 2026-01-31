@@ -165,7 +165,7 @@ def main():
         # Action 2: File read
         print("2️⃣  Reading file...")
         try:
-            result = tools[1].func("config.yaml")
+            tools[1].func("config.yaml")
             print(f"   ✅ File read completed")
         except Exception as e:
             print(f"   ❌ File read failed: {e}")
