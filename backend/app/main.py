@@ -187,7 +187,8 @@ def get_agent_events(
             AuditEventDB.agent_instance_id == agent_id
         ).count()
         
-        logger.info(f"Retrieved {len(audit_events)} events for agent {agent_id}")
+        safe_agent_id = agent_id.replace("\r", "").replace("\n", "")
+        logger.info(f"Retrieved {len(audit_events)} events for agent {safe_agent_id}")
         
         return AuditEventResponse(
             events=audit_events,
