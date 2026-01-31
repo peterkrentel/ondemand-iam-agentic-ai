@@ -1,7 +1,7 @@
 """
 Event types and models for OnDemand IAM Agentic AI SDK
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 from enum import Enum
 from dataclasses import dataclass, field, asdict
@@ -44,7 +44,7 @@ class AuditEvent:
     resource: str
     status: EventStatus
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     latency_ms: Optional[int] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
