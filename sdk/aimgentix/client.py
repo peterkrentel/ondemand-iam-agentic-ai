@@ -35,7 +35,7 @@ class AuditClient:
         Initialize the audit client
 
         Args:
-            api_url: Base URL of the OnDemand IAM Agentic AI API
+            api_url: Base URL of the AIMgentix API
             buffer_size: Maximum number of events to buffer before forcing flush
             flush_interval: Seconds between automatic flushes
             max_retries: Maximum retry attempts for failed requests
