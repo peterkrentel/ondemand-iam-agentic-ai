@@ -1,4 +1,4 @@
-# 🛡️ OnDemand IAM Agentic AI - Agent Audit Trail
+# 🛡️ AIMgentix - Agent Audit Trail
 
 **Lightweight audit layer for AI agents. Privacy-first. Production-ready.**
 
@@ -6,7 +6,7 @@
 
 ## 🎯 What is This?
 
-OnDemand IAM Agentic AI captures what your AI agents do - tool calls, API requests, file access - and gives you a complete audit trail.
+AIMgentix captures what your AI agents do - tool calls, API requests, file access - and gives you a complete audit trail.
 
 **The Problem**: Enterprises are deploying AI agents with no visibility into what they're doing. Security teams are nervous. Compliance teams are blocked.
 
@@ -67,7 +67,7 @@ Open `demo/ui/index.html` in your browser
 ## 📦 What's Inside
 
 ```
-ondemand-iam-agentic-ai/
+aimgentix/
 ├── backend/              # FastAPI audit API
 ├── sdk/                  # Python SDK
 ├── demo/                 # Demo agent + UI
@@ -80,7 +80,7 @@ ondemand-iam-agentic-ai/
 ## 🔧 Integration Example
 
 ```python
-from ondemand_iam_agentic_ai import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
+from aimgentix import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
 
 # Initialize client
 audit_client = AuditClient(api_url="http://localhost:8000")
@@ -103,7 +103,7 @@ audit_client.capture(event)
 
 ## 🎬 Demo
 
-![OnDemand IAM Agentic AI Dashboard](https://via.placeholder.com/800x400?text=OnDemand+IAM+Agentic+AI+Audit+Dashboard)
+![AIMgentix Dashboard](https://via.placeholder.com/800x400?text=AIMgentix+Audit+Dashboard)
 
 ---
 
@@ -124,6 +124,37 @@ audit_client.capture(event)
 - [ ] Multi-tenant support
 
 See [mvp-master-plan.md](mvp-master-plan.md) for full details.
+
+---
+
+## ❓ FAQ
+
+### **Does AIMgentix have any usage limits or pricing?**
+
+**No!** AIMgentix is:
+- ✅ Completely open source (MIT License)
+- ✅ No usage limits or rate limiting
+- ✅ No premium tiers or paid features  
+- ✅ Runs entirely on your own infrastructure
+
+You control all aspects of deployment and can handle unlimited audit events.
+
+### **What does "2 premium requests" mean in GitHub Codespaces?**
+
+This refers to **GitHub Codespaces usage limits**, not AIMgentix:
+
+- GitHub's free tier includes 120 core-hours/month (≈60 hours on a 2-core machine)
+- When you exceed this, GitHub may prompt for paid Codespaces usage
+- **Alternative**: Use local development (VS Code Dev Containers or direct setup) - completely free with no limits
+
+[Learn more about GitHub Codespaces billing](https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces)
+
+### **How do I avoid Codespaces limits?**
+
+Three options:
+1. **VS Code Dev Containers** (locally with Docker) - unlimited, free
+2. **Regular local setup** - no containers needed, see Quick Start above
+3. **Upgrade GitHub account** - for more Codespaces hours if you prefer cloud development
 
 ---
 

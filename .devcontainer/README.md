@@ -1,6 +1,6 @@
-# 🐳 OnDemand IAM Agentic AI Dev Container
+# 🐳 AIMgentix Dev Container
 
-**One-click development environment for OnDemand IAM Agentic AI**
+**One-click development environment for AIMgentix**
 
 ---
 
@@ -35,7 +35,7 @@
 - ✅ Node.js 18 (for future frontend work)
 - ✅ Git
 - ✅ All Python dependencies pre-installed
-- ✅ OnDemand IAM Agentic AI SDK installed in development mode
+- ✅ AIMgentix SDK installed in development mode
 - ✅ VS Code extensions (Python, linting, formatting)
 - ✅ Helpful shell aliases
 
@@ -58,7 +58,7 @@ view-events    # View captured events (pretty-printed JSON)
 
 The dev container automatically forwards these ports:
 
-- **8000** - OnDemand IAM Agentic AI API (FastAPI backend)
+- **8000** - AIMgentix API (FastAPI backend)
 - **3000** - Reserved for future UI server
 
 You can access them at:
@@ -123,6 +123,35 @@ Cmd+Shift+P → "Forward a Port" → Enter 8000
 cd /workspaces/ondemand-iam-agentic-ai/sdk
 pip install -e .
 ```
+
+---
+
+## ❓ FAQ
+
+### **Q: What does "2 premium requests" or "X core hours" mean in GitHub Codespaces?**
+
+**A:** This refers to GitHub Codespaces usage limits, NOT AIMgentix functionality:
+
+- **Free tier**: GitHub provides 120 core-hours/month (about 60 hours on a 2-core machine)
+- **Premium requests**: When you exceed the free tier, GitHub may prompt for paid usage
+- **AIMgentix itself has NO request limits** - it's open source and runs entirely on your infrastructure
+
+**Alternative if you hit Codespaces limits**:
+1. Use **VS Code Dev Containers locally** (Option 2 above) - completely free, no limits
+2. Use **regular local setup** without containers - see [README.md](../README.md)
+3. Upgrade to GitHub Team/Enterprise for more Codespaces hours
+
+[Learn more about GitHub Codespaces billing](https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces)
+
+### **Q: Does AIMgentix have any usage limits or require premium access?**
+
+**A:** No! AIMgentix is:
+- ✅ Completely open source (MIT License)
+- ✅ No usage limits or rate limiting in the code
+- ✅ No premium tiers or paid features
+- ✅ Runs entirely on your own infrastructure
+
+You control all aspects of deployment and can handle unlimited events.
 
 ---
 

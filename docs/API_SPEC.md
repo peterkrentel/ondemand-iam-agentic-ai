@@ -1,6 +1,6 @@
 # 📋 API Specification
 
-**OnDemand IAM Agentic AI - Agent Audit Trail API**
+**AIMgentix - Agent Audit Trail API**
 
 Version: 0.1.0
 
@@ -48,7 +48,7 @@ Check API health and get version information.
 **Response** (200 OK):
 ```json
 {
-  "service": "OnDemand IAM Agentic AI API",
+  "service": "AIMgentix API",
   "status": "operational",
   "version": "0.1.0",
   "docs": "/docs"
@@ -233,7 +233,7 @@ Currently no rate limits (development mode).
 ### Python SDK
 
 ```python
-from ondemand_iam_agentic_ai import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
+from aimgentix import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
 
 # Initialize client
 audit_client = AuditClient(api_url="http://localhost:8000")
