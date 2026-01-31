@@ -194,7 +194,7 @@ CREATE INDEX idx_timestamp ON audit_events(timestamp);
 
 ### **LangChain Agents**
 ```python
-from ondemand_iam_agentic_ai import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
+from aimgentix import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
 
 audit_client = AuditClient()
 

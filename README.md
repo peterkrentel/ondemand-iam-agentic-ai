@@ -67,7 +67,7 @@ Open `demo/ui/index.html` in your browser
 ## 📦 What's Inside
 
 ```
-ondemand-iam-agentic-ai/
+aimgentix/
 ├── backend/              # FastAPI audit API
 ├── sdk/                  # Python SDK
 ├── demo/                 # Demo agent + UI

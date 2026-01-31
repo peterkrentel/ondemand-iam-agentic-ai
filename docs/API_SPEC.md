@@ -233,7 +233,7 @@ Currently no rate limits (development mode).
 ### Python SDK
 
 ```python
-from ondemand_iam_agentic_ai import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
+from aimgentix import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
 
 # Initialize client
 audit_client = AuditClient(api_url="http://localhost:8000")

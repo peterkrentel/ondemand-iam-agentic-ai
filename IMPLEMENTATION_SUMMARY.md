@@ -28,8 +28,8 @@ This PR successfully implements all requirements from the problem statement:
 - `demo/demo_agent.py` - Demo imports and messages
 - `sdk/setup.py` - Package name and description
 - `sdk/aimgentix/__init__.py` - SDK docstring
-- `sdk/ondemand_iam_agentic_ai/events.py` - Event models docstring
-- `sdk/ondemand_iam_agentic_ai/client.py` - Client docstring
+- `sdk/aimgentix/events.py` - Event models docstring
+- `sdk/aimgentix/client.py` - Client docstring
 - `.devcontainer/README.md` - Dev container documentation
 - `.devcontainer/setup.sh` - Setup script messages
 - `.gitignore` - Database file name
