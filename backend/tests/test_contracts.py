@@ -112,7 +112,7 @@ class TestEnumExhaustiveness:
         """Verify all ActionType enum values are accepted"""
         import uuid
         for action_type in ActionType:
-        for action_type in ActionType.__members__.values():
+            event_data = {
                 "event_id": str(uuid.uuid4()),
                 "agent_instance_id": "test-agent",
                 "trace_id": "test-trace",
