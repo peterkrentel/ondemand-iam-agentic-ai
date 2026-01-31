@@ -1,5 +1,5 @@
 """
-OnDemand IAM Agentic AI Client - Non-blocking audit event capture with buffering and retry
+AIMgentix Client - Non-blocking audit event capture with buffering and retry
 """
 import requests
 import logging

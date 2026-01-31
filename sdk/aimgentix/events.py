@@ -1,5 +1,5 @@
 """
-Event types and models for OnDemand IAM Agentic AI SDK
+Event types and models for AIMgentix SDK
 """
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any

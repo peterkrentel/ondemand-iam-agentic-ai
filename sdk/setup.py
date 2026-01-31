@@ -1,12 +1,12 @@
 """
-Setup script for OnDemand IAM Agentic AI SDK
+Setup script for AIMgentix SDK
 """
 from setuptools import setup, find_packages
 
 setup(
-    name="ondemand-iam-agentic-ai",
+    name="aimgentix",
     version="0.1.0",
-    description="Python SDK for OnDemand IAM Agentic AI Agent Audit Trail",
+    description="Python SDK for AIMgentix Agent Audit Trail",
     author="Peter Krentel",
     packages=find_packages(),
     install_requires=[

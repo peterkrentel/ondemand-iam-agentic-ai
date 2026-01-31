@@ -1,5 +1,5 @@
 """
-Demo Agent with OnDemand IAM Agentic AI Integration
+Demo Agent with AIMgentix Integration
 
 This demonstrates how to instrument a LangChain agent with automatic audit trail capture.
 """
@@ -11,7 +11,7 @@ from datetime import datetime
 # Add SDK to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'sdk'))
 
-from ondemand_iam_agentic_ai import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
+from aimgentix import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
 
 # LangChain imports
 from langchain.agents import AgentExecutor, create_react_agent
@@ -135,7 +135,7 @@ def create_demo_agent(audit_client: AuditClient):
 
 def main():
     """Run the demo agent"""
-    print("🚀 Starting OnDemand IAM Agentic AI Demo Agent")
+    print("🚀 Starting AIMgentix Demo Agent")
     print(f"📋 Agent Instance ID: {AGENT_INSTANCE_ID}")
     print(f"🔍 Trace ID: {TRACE_ID}")
     print()

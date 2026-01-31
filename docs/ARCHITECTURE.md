@@ -1,4 +1,4 @@
-# 🏗️ OnDemand IAM Agentic AI Architecture
+# 🏗️ AIMgentix Architecture
 
 **Last Updated**: 2026-01-25
 
@@ -6,7 +6,7 @@
 
 ## 🎯 System Overview
 
-OnDemand IAM Agentic AI is a **lightweight audit layer** for AI agents. It captures agent actions (tool calls, API requests, file access) and provides a complete audit trail for visibility, compliance, and security.
+AIMgentix is a **lightweight audit layer** for AI agents. It captures agent actions (tool calls, API requests, file access) and provides a complete audit trail for visibility, compliance, and security.
 
 ### **Design Principles**
 
@@ -23,7 +23,7 @@ OnDemand IAM Agentic AI is a **lightweight audit layer** for AI agents. It captu
 ```mermaid
 graph TB
     Agent[AI Agent Runtime]
-    SDK[OnDemand IAM SDK]
+    SDK[AIMgentix SDK]
     API[FastAPI Backend]
     DB[(SQLite/DynamoDB)]
     UI[Web Dashboard]
@@ -70,7 +70,7 @@ sequenceDiagram
 
 ## 🧩 Component Details
 
-### **1. OnDemand IAM Agentic AI SDK** (`sdk/ondemand_iam_agentic_ai/`)
+### **1. AIMgentix SDK** (`sdk/aimgentix/`)
 
 **Purpose**: Non-blocking event capture with buffering and retry logic
 

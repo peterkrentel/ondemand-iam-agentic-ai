@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# OnDemand IAM Agentic AI Dev Container Setup Script
+# AIMgentix Dev Container Setup Script
 # This runs automatically when the dev container is created
 
 set -e
 
-echo "🛡️  Setting up OnDemand IAM Agentic AI development environment..."
+echo "🛡️  Setting up AIMgentix development environment..."
 echo ""
 
 # Install backend dependencies
@@ -16,7 +16,7 @@ echo "✅ Backend dependencies installed"
 echo ""
 
 # Install SDK in development mode
-echo "📦 Installing OnDemand IAM Agentic AI SDK..."
+echo "📦 Installing AIMgentix SDK..."
 cd /workspaces/ondemand-iam-agentic-ai/sdk
 pip install -q -e .
 echo "✅ SDK installed"
@@ -31,14 +31,14 @@ echo ""
 
 # Verify installation
 echo "🧪 Verifying installation..."
-python -c "from ondemand_iam_agentic_ai import AuditClient; print('✅ OnDemand IAM Agentic AI SDK import successful')"
+python -c "from aimgentix import AuditClient; print('✅ AIMgentix SDK import successful')"
 echo ""
 
 # Create helpful aliases
 echo "📝 Creating helpful aliases..."
 cat >> ~/.bashrc << 'EOF'
 
-# OnDemand IAM Agentic AI aliases
+# AIMgentix aliases
 alias start-api='cd /workspaces/ondemand-iam-agentic-ai/backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload'
 alias run-demo='cd /workspaces/ondemand-iam-agentic-ai/demo && python demo_agent.py'
 alias test-api='curl http://localhost:8000'
@@ -52,7 +52,7 @@ echo ""
 cat << 'EOF'
 ╔════════════════════════════════════════════════════════════╗
 ║                                                            ║
-║   🛡️  OnDemand IAM Agentic AI - Development Environment Ready!     ║
+║   🛡️  AIMgentix - Development Environment Ready!          ║
 ║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
 

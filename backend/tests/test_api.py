@@ -1,5 +1,5 @@
 """
-Tests for the OnDemand IAM Agentic AI API
+Tests for the AIMgentix API
 """
 import pytest
 from fastapi.testclient import TestClient
@@ -19,7 +19,7 @@ def test_health_check():
     response = client.get("/")
     assert response.status_code == 200
     data = response.json()
-    assert data["service"] == "OnDemand IAM Agentic AI API"
+    assert data["service"] == "AIMgentix API"
     assert data["status"] == "operational"
     assert data["version"] == "0.1.0"
     assert "docs" in data

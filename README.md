@@ -1,4 +1,4 @@
-# 🛡️ OnDemand IAM Agentic AI - Agent Audit Trail
+# 🛡️ AIMgentix - Agent Audit Trail
 
 **Lightweight audit layer for AI agents. Privacy-first. Production-ready.**
 
@@ -6,7 +6,7 @@
 
 ## 🎯 What is This?
 
-OnDemand IAM Agentic AI captures what your AI agents do - tool calls, API requests, file access - and gives you a complete audit trail.
+AIMgentix captures what your AI agents do - tool calls, API requests, file access - and gives you a complete audit trail.
 
 **The Problem**: Enterprises are deploying AI agents with no visibility into what they're doing. Security teams are nervous. Compliance teams are blocked.
 
@@ -80,7 +80,7 @@ ondemand-iam-agentic-ai/
 ## 🔧 Integration Example
 
 ```python
-from ondemand_iam_agentic_ai import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
+from aimgentix import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
 
 # Initialize client
 audit_client = AuditClient(api_url="http://localhost:8000")
@@ -103,7 +103,7 @@ audit_client.capture(event)
 
 ## 🎬 Demo
 
-![OnDemand IAM Agentic AI Dashboard](https://via.placeholder.com/800x400?text=OnDemand+IAM+Agentic+AI+Audit+Dashboard)
+![AIMgentix Dashboard](https://via.placeholder.com/800x400?text=AIMgentix+Audit+Dashboard)
 
 ---
 

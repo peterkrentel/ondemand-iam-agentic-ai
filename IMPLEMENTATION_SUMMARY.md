@@ -11,10 +11,10 @@ This PR successfully implements all requirements from the problem statement:
 
 ## Changes Made
 
-### 1. Renaming (Sentinel → OnDemand IAM Agentic AI)
+### 1. Renaming (Sentinel → AIMgentix)
 
 **SDK Package Renamed:**
-- `sdk/sentinel_audit/` → `sdk/ondemand_iam_agentic_ai/`
+- `sdk/sentinel_audit/` → `sdk/aimgentix/`
 - Updated all imports in demo, backend, and documentation
 
 **Files Updated:**
@@ -27,7 +27,7 @@ This PR successfully implements all requirements from the problem statement:
 - `backend/app/db.py` - Database file name
 - `demo/demo_agent.py` - Demo imports and messages
 - `sdk/setup.py` - Package name and description
-- `sdk/ondemand_iam_agentic_ai/__init__.py` - SDK docstring
+- `sdk/aimgentix/__init__.py` - SDK docstring
 - `sdk/ondemand_iam_agentic_ai/events.py` - Event models docstring
 - `sdk/ondemand_iam_agentic_ai/client.py` - Client docstring
 - `.devcontainer/README.md` - Dev container documentation
@@ -137,7 +137,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 # Test health check
 curl http://localhost:8000/
-# Returns: {"service":"OnDemand IAM Agentic AI API","status":"operational","version":"0.1.0","docs":"/docs"}
+# Returns: {"service":"AIMgentix API","status":"operational","version":"0.1.0","docs":"/docs"}
 
 # Test event creation
 curl -X POST http://localhost:8000/v1/events \

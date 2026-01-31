@@ -1,6 +1,6 @@
-# 🐳 OnDemand IAM Agentic AI Dev Container
+# 🐳 AIMgentix Dev Container
 
-**One-click development environment for OnDemand IAM Agentic AI**
+**One-click development environment for AIMgentix**
 
 ---
 
@@ -35,7 +35,7 @@
 - ✅ Node.js 18 (for future frontend work)
 - ✅ Git
 - ✅ All Python dependencies pre-installed
-- ✅ OnDemand IAM Agentic AI SDK installed in development mode
+- ✅ AIMgentix SDK installed in development mode
 - ✅ VS Code extensions (Python, linting, formatting)
 - ✅ Helpful shell aliases
 
@@ -58,7 +58,7 @@ view-events    # View captured events (pretty-printed JSON)
 
 The dev container automatically forwards these ports:
 
-- **8000** - OnDemand IAM Agentic AI API (FastAPI backend)
+- **8000** - AIMgentix API (FastAPI backend)
 - **3000** - Reserved for future UI server
 
 You can access them at:

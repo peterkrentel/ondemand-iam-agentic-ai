@@ -86,7 +86,7 @@ jobs:
     - name: Run SDK tests
       working-directory: sdk
       run: |
-        pytest --cov=ondemand_iam_agentic_ai --cov-report=xml --cov-report=term-missing || echo "No tests found yet"
+        pytest --cov=aimgentix --cov-report=xml --cov-report=term-missing || echo "No tests found yet"
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -167,7 +167,7 @@ jobs:
       with:
         context: ./backend
         push: false
-        tags: ondemand-iam-agentic-ai:latest
+        tags: aimgentix:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 

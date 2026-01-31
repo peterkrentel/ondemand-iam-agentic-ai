@@ -1,4 +1,4 @@
-# 🚀 OnDemand IAM Agentic AI Operations Guide
+# 🚀 AIMgentix Operations Guide
 
 **Production deployment, monitoring, and troubleshooting**
 

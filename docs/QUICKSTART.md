@@ -1,4 +1,4 @@
-# 🚀 OnDemand IAM Agentic AI - Quick Start Guide
+# 🚀 AIMgentix - Quick Start Guide
 
 **Agent Audit Trail Capture in 5 Minutes**
 
@@ -6,7 +6,7 @@
 
 ## What is This?
 
-OnDemand IAM Agentic AI is a lightweight audit layer for AI agents. It captures:
+AIMgentix is a lightweight audit layer for AI agents. It captures:
 - ✅ What tools agents use
 - ✅ What resources they access
 - ✅ When and how long operations take
@@ -46,7 +46,7 @@ curl http://localhost:8000
 You should see:
 ```json
 {
-  "service": "OnDemand IAM Agentic AI API",
+  "service": "AIMgentix API",
   "status": "operational",
   "version": "0.1.0"
 }
@@ -81,7 +81,7 @@ python demo_agent.py
 
 You should see:
 ```
-🚀 Starting OnDemand IAM Agentic AI Demo Agent
+🚀 Starting AIMgentix Demo Agent
 📋 Agent Instance ID: demo-agent-001
 🔍 Trace ID: trace-20260125-103000
 
@@ -125,7 +125,7 @@ You'll see a beautiful timeline of all agent actions!
 ## Step 5: Instrument Your Own Agent
 
 ```python
-from ondemand_iam_agentic_ai import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
+from aimgentix import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
 
 # Initialize client
 audit_client = AuditClient(api_url="http://localhost:8000")

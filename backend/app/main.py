@@ -1,5 +1,5 @@
 """
-OnDemand IAM Agentic AI API - FastAPI backend for agent audit trail capture
+AIMgentix API - FastAPI backend for agent audit trail capture
 """
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="OnDemand IAM Agentic AI API",
+    title="AIMgentix API",
     description="""
     ## Lightweight audit layer for AI agents
     
@@ -80,7 +80,7 @@ def root():
     Returns the service status and version information.
     """
     return {
-        "service": "OnDemand IAM Agentic AI API",
+        "service": "AIMgentix API",
         "status": "operational",
         "version": "0.1.0",
         "docs": "/docs"
