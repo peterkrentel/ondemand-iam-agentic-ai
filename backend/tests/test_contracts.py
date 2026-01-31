@@ -95,9 +95,10 @@ class TestEnumExhaustiveness:
     
     def test_all_actor_types_valid(self):
         """Verify all ActorType enum values are accepted"""
+        import uuid
         for actor_type in ActorType:
             event_data = {
-                "event_id": f"test-{actor_type.value}",
+                "event_id": str(uuid.uuid4()),
                 "agent_instance_id": "test-agent",
                 "trace_id": "test-trace",
                 "actor": actor_type.value,
@@ -110,9 +111,10 @@ class TestEnumExhaustiveness:
     
     def test_all_action_types_valid(self):
         """Verify all ActionType enum values are accepted"""
+        import uuid
         for action_type in ActionType:
             event_data = {
-                "event_id": f"test-{action_type.value}",
+                "event_id": str(uuid.uuid4()),
                 "agent_instance_id": "test-agent",
                 "trace_id": "test-trace",
                 "actor": "agent",
@@ -125,9 +127,10 @@ class TestEnumExhaustiveness:
     
     def test_all_status_types_valid(self):
         """Verify all EventStatus enum values are accepted"""
+        import uuid
         for status in EventStatus:
             event_data = {
-                "event_id": f"test-{status.value}",
+                "event_id": str(uuid.uuid4()),
                 "agent_instance_id": "test-agent",
                 "trace_id": "test-trace",
                 "actor": "agent",
@@ -208,8 +211,9 @@ class TestPydanticValidation:
     
     def test_optional_fields_allowed_null(self):
         """Verify optional fields can be omitted or null"""
+        import uuid
         event_data = {
-            "event_id": "test-optional",
+            "event_id": str(uuid.uuid4()),
             "agent_instance_id": "test-agent",
             "trace_id": "test-trace",
             "actor": "agent",
@@ -289,10 +293,12 @@ class TestSchemaConsistency:
     
     def test_response_model_validation(self):
         """Verify response models validate correctly"""
+        import uuid
         # Create event first
+        agent_id = f"test-response-agent-{uuid.uuid4().hex[:8]}"
         event_data = {
-            "event_id": "test-response",
-            "agent_instance_id": "test-response-agent",
+            "event_id": str(uuid.uuid4()),
+            "agent_instance_id": agent_id,
             "trace_id": "test-trace",
             "actor": "agent",
             "action_type": "tool_call",
@@ -303,7 +309,7 @@ class TestSchemaConsistency:
         assert response.status_code == 201
         
         # Get events
-        response = client.get("/v1/agents/test-response-agent/events")
+        response = client.get(f"/v1/agents/{agent_id}/events")
         assert response.status_code == 200
         data = response.json()
         
