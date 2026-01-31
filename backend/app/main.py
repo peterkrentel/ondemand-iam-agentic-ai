@@ -1,5 +1,5 @@
 """
-Sentinel Audit API - FastAPI backend for agent audit trail capture
+OnDemand IAM Agentic AI API - FastAPI backend for agent audit trail capture
 """
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Sentinel Audit API",
+    title="OnDemand IAM Agentic AI API",
     description="Agent audit trail capture and retrieval",
     version="0.1.0"
 )
@@ -43,7 +43,7 @@ def startup_event():
 def root():
     """Health check endpoint"""
     return {
-        "service": "Sentinel Audit API",
+        "service": "OnDemand IAM Agentic AI API",
         "status": "operational",
         "version": "0.1.0"
     }

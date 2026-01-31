@@ -1,4 +1,4 @@
-# 🚀 Sentinel Operations Guide
+# 🚀 OnDemand IAM Agentic AI Operations Guide
 
 **Production deployment, monitoring, and troubleshooting**
 
@@ -29,10 +29,10 @@ After=network.target
 
 [Service]
 Type=simple
-User=sentinel
-WorkingDirectory=/opt/sentinel/backend
-Environment="PATH=/opt/sentinel/venv/bin"
-ExecStart=/opt/sentinel/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+User=ondemand-iam
+WorkingDirectory=/opt/ondemand-iam/backend
+Environment="PATH=/opt/ondemand-iam/venv/bin"
+ExecStart=/opt/ondemand-iam/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=10
 
@@ -42,9 +42,9 @@ WantedBy=multi-user.target
 
 **2. Enable and start**:
 ```bash
-sudo systemctl enable sentinel-api
-sudo systemctl start sentinel-api
-sudo systemctl status sentinel-api
+sudo systemctl enable ondemand-iam-api
+sudo systemctl start ondemand-iam-api
+sudo systemctl status ondemand-iam-api
 ```
 
 ### **Option 3: Cloud Deployment**
@@ -56,21 +56,21 @@ pip install awsebcli
 
 # Initialize
 cd backend
-eb init -p python-3.11 sentinel-api
+eb init -p python-3.11 ondemand-iam-api
 
 # Deploy
-eb create sentinel-prod
+eb create ondemand-iam-prod
 eb open
 ```
 
 #### **Google Cloud Run**
 ```bash
 # Build container
-gcloud builds submit --tag gcr.io/PROJECT_ID/sentinel-api
+gcloud builds submit --tag gcr.io/PROJECT_ID/ondemand-iam-api
 
 # Deploy
-gcloud run deploy sentinel-api \
-  --image gcr.io/PROJECT_ID/sentinel-api \
+gcloud run deploy ondemand-iam-api \
+  --image gcr.io/PROJECT_ID/ondemand-iam-api \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated

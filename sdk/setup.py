@@ -1,12 +1,12 @@
 """
-Setup script for Sentinel Audit SDK
+Setup script for OnDemand IAM Agentic AI SDK
 """
 from setuptools import setup, find_packages
 
 setup(
-    name="sentinel-audit",
+    name="ondemand-iam-agentic-ai",
     version="0.1.0",
-    description="Python SDK for Sentinel Agent Audit Trail",
+    description="Python SDK for OnDemand IAM Agentic AI Agent Audit Trail",
     author="Peter Krentel",
     packages=find_packages(),
     install_requires=[
