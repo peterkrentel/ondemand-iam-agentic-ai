@@ -7,7 +7,6 @@ These tests ensure that:
 3. Data serialization works correctly
 4. SDK can communicate with API successfully
 """
-import pytest
 from datetime import datetime, timezone
 
 from aimgentix import AuditEvent, ActorType, ActionType, EventStatus
