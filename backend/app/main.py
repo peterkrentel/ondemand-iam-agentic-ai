@@ -16,6 +16,19 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def _sanitize_for_log(value):
+    """
+    Remove newline and carriage-return characters from values before logging.
+    This helps prevent log injection when logging user-controlled data.
+    """
+    if value is None:
+        return value
+    if not isinstance(value, str):
+        value = str(value)
+    # Strip CR/LF and other control characters below ASCII 32
+    return "".join(ch for ch in value if ord(ch) >= 32 or ch in ("\t",))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan event handler for startup and shutdown"""
@@ -128,7 +141,9 @@ def create_event(event: AuditEvent, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(db_event)
         
-        logger.info(f"Event captured: {event.event_id} for agent {event.agent_instance_id}")
+        safe_event_id = _sanitize_for_log(event.event_id)
+        safe_agent_id = _sanitize_for_log(event.agent_instance_id)
+        logger.info(f"Event captured: {safe_event_id} for agent {safe_agent_id}")
         
         return {"event_id": event.event_id, "status": "captured"}
     
