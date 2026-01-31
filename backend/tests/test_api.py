@@ -2,7 +2,6 @@
 Tests for the AIMgentix API
 """
 from fastapi.testclient import TestClient
-from datetime import datetime
 
 from app.main import app
 from app.db import init_db
