@@ -1,5 +1,5 @@
 """
-Sentinel Audit Client - Non-blocking audit event capture with buffering and retry
+OnDemand IAM Agentic AI Client - Non-blocking audit event capture with buffering and retry
 """
 import requests
 import logging
@@ -35,7 +35,7 @@ class AuditClient:
         Initialize the audit client
 
         Args:
-            api_url: Base URL of the Sentinel Audit API
+            api_url: Base URL of the OnDemand IAM Agentic AI API
             buffer_size: Maximum number of events to buffer before forcing flush
             flush_interval: Seconds between automatic flushes
             max_retries: Maximum retry attempts for failed requests
@@ -76,7 +76,7 @@ class AuditClient:
             try:
                 event = self._buffer.get_nowait()
                 events_to_send.append(event)
-            except:
+            except Exception:
                 break
         
         # Send events
