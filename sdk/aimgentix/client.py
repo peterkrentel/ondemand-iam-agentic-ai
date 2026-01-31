@@ -29,7 +29,8 @@ class AuditClient:
         buffer_size: int = 100,
         flush_interval: float = 5.0,
         max_retries: int = 3,
-        retry_backoff: float = 1.0
+        retry_backoff: float = 1.0,
+        verify_ssl: bool = True
     ):
         """
         Initialize the audit client
@@ -40,12 +41,14 @@ class AuditClient:
             flush_interval: Seconds between automatic flushes
             max_retries: Maximum retry attempts for failed requests
             retry_backoff: Initial backoff time in seconds (doubles each retry)
+            verify_ssl: Whether to verify SSL certificates (default: True)
         """
         self.api_url = api_url.rstrip('/')
         self.buffer_size = buffer_size
         self.flush_interval = flush_interval
         self.max_retries = max_retries
         self.retry_backoff = retry_backoff
+        self.verify_ssl = verify_ssl
         
         self._buffer: Queue = Queue(maxsize=buffer_size)
         self._stop_event = Event()
@@ -92,12 +95,22 @@ class AuditClient:
                 response = requests.post(
                     f"{self.api_url}/v1/events",
                     json=event.to_dict(),
-                    timeout=5.0
+                    timeout=5.0,
+                    verify=self.verify_ssl
                 )
                 response.raise_for_status()
                 logger.debug(f"Event {event.event_id} sent successfully")
                 return
             
+            except requests.exceptions.SSLError as e:
+                logger.error(f"SSL verification failed: {e}")
+                # Don't retry SSL errors
+                break
+            except requests.exceptions.Timeout:
+                logger.warning(f"Request timeout (attempt {attempt + 1}/{self.max_retries})")
+                if attempt < self.max_retries - 1:
+                    time.sleep(backoff)
+                    backoff *= 2
             except Exception as e:
                 logger.warning(f"Failed to send event (attempt {attempt + 1}/{self.max_retries}): {e}")
                 

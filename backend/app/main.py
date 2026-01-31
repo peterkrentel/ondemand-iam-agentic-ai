@@ -5,7 +5,10 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 import logging
+import os
 
 from .models import AuditEvent, AuditEventResponse
 from .db import get_db, init_db, AuditEventDB
@@ -13,6 +16,22 @@ from .db import get_db, init_db, AuditEventDB
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Environment configuration
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080").split(",")
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Add security headers to all responses"""
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        # Add security headers
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return response
 
 
 @asynccontextmanager
@@ -61,14 +80,29 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware for local development
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Add security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
+# CORS middleware - configured based on environment
+# In production, set ALLOWED_ORIGINS environment variable
+if ENVIRONMENT == "development":
+    # Development: Allow localhost origins only
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=ALLOWED_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE"],
+        allow_headers=["*"],
+    )
+else:
+    # Production: Strict CORS policy
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=ALLOWED_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type", "Authorization"],
+    )
 
 
 @app.get("/", tags=["Health"])
@@ -134,7 +168,8 @@ def create_event(event: AuditEvent, db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error capturing event: {str(e)}")
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to capture event: {str(e)}")
+        # Don't expose internal error details to client
+        raise HTTPException(status_code=500, detail="Failed to capture event")
 
 
 @app.get("/v1/agents/{agent_id}/events", response_model=AuditEventResponse, tags=["Events"])
@@ -196,5 +231,6 @@ def get_agent_events(
     
     except Exception as e:
         logger.error(f"Error retrieving events: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve events: {str(e)}")
+        # Don't expose internal error details to client
+        raise HTTPException(status_code=500, detail="Failed to retrieve events")
 
