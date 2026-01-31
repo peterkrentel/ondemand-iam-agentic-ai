@@ -1,7 +1,6 @@
 """
 Tests for the AIMgentix API
 """
-import pytest
 from fastapi.testclient import TestClient
 from datetime import datetime
 
