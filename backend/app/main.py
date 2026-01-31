@@ -115,7 +115,7 @@ def create_event(event: AuditEvent, db: Session = Depends(get_db)):
             resource=event.resource,
             status=event.status.value,
             latency_ms=event.latency_ms,
-            metadata=event.metadata
+            event_metadata=event.metadata
         )
         
         db.add(db_event)
@@ -172,7 +172,7 @@ def get_agent_events(
                 resource=e.resource,
                 status=e.status,
                 latency_ms=e.latency_ms,
-                metadata=e.metadata or {}
+                metadata=e.event_metadata or {}
             )
             for e in events
         ]

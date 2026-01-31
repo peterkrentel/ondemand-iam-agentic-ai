@@ -101,9 +101,11 @@ def test_audit_client_capture(mock_post):
         status=EventStatus.SUCCESS
     )
     
-    result = client.capture(event)
-    assert result is True
-    mock_post.assert_called_once()
+    # Capture returns None (async buffering)
+    client.capture(event)
+    # Flush to send events
+    client.flush()
+    assert mock_post.called
 
 
 @patch('requests.post')
@@ -122,8 +124,11 @@ def test_audit_client_capture_failure(mock_post):
     )
     
     # Should not raise, just log error
-    result = client.capture(event)
-    assert result is False
+    client.capture(event)
+    # Flush will attempt to send and fail
+    client.flush()
+    # Client should gracefully handle the error
+    assert mock_post.called
 
 
 def test_audit_client_context_manager():

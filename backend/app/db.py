@@ -28,7 +28,7 @@ class AuditEventDB(Base):
     resource = Column(String, nullable=False)
     status = Column(String, nullable=False)
     latency_ms = Column(Integer, nullable=True)
-    metadata = Column(JSON, nullable=True)
+    event_metadata = Column(JSON, nullable=True)
 
 
 def init_db():

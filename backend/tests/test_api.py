@@ -6,6 +6,10 @@ from fastapi.testclient import TestClient
 from datetime import datetime
 
 from app.main import app
+from app.db import init_db
+
+# Initialize database before running tests
+init_db()
 
 client = TestClient(app)
 
@@ -99,9 +103,9 @@ def test_create_event_validation():
 
 def test_actor_types():
     """Test different actor types"""
-    for actor in ["agent", "human", "system"]:
+    for i, actor in enumerate(["agent", "human", "system"]):
         event_data = {
-            "event_id": f"550e8400-e29b-41d4-a716-44665544{actor[:4]}",
+            "event_id": f"550e8400-e29b-41d4-a716-446655442{i:03d}",
             "agent_instance_id": f"test-agent-{actor}",
             "trace_id": f"test-trace-{actor}",
             "actor": actor,
@@ -120,7 +124,7 @@ def test_action_types():
     
     for i, action_type in enumerate(action_types):
         event_data = {
-            "event_id": f"550e8400-e29b-41d4-a716-446655440{i:03d}",
+            "event_id": f"550e8400-e29b-41d4-a716-446655441{i:03d}",
             "agent_instance_id": "test-agent-actions",
             "trace_id": "test-trace-actions",
             "actor": "agent",
@@ -135,9 +139,9 @@ def test_action_types():
 
 def test_event_status_types():
     """Test different event status types"""
-    for status in ["success", "error", "pending"]:
+    for i, status in enumerate(["success", "error", "pending"]):
         event_data = {
-            "event_id": f"550e8400-e29b-41d4-a716-4466554400{status[:2]}",
+            "event_id": f"550e8400-e29b-41d4-a716-446655443{i:03d}",
             "agent_instance_id": "test-agent-status",
             "trace_id": "test-trace-status",
             "actor": "agent",
