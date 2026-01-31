@@ -2,9 +2,8 @@
 Database setup and models for SQLite
 """
 from sqlalchemy import create_engine, Column, String, Integer, DateTime, JSON
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from datetime import datetime
+from sqlalchemy.orm import declarative_base, sessionmaker
+from datetime import datetime, timezone
 import os
 
 # Database setup
@@ -20,7 +19,7 @@ class AuditEventDB(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     event_id = Column(String, unique=True, index=True, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     agent_instance_id = Column(String, index=True, nullable=False)
     trace_id = Column(String, index=True, nullable=False)
     actor = Column(String, nullable=False)
