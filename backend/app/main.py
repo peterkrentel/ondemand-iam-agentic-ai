@@ -4,7 +4,6 @@ AIMgentix API - FastAPI backend for agent audit trail capture
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
 from contextlib import asynccontextmanager
 import logging
 

@@ -14,10 +14,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'sdk'))
 from aimgentix import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
 
 # LangChain imports
-from langchain.agents import AgentExecutor, create_react_agent
 from langchain.tools import Tool
 from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
-from langchain.prompts import PromptTemplate
 
 
 # Agent configuration

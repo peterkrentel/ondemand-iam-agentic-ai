@@ -1,7 +1,6 @@
 """
 Tests for the AIMgentix SDK
 """
-import pytest
 from unittest.mock import Mock, patch
 import requests
 
@@ -10,7 +9,6 @@ from aimgentix import AuditClient, AuditEvent, ActorType, ActionType, EventStatu
 
 def test_import():
     """Test that SDK can be imported"""
-    from aimgentix import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
     assert AuditClient is not None
     assert AuditEvent is not None
 

@@ -7,7 +7,6 @@ These tests ensure that:
 3. All enum values are properly defined and handled
 4. Schema changes don't break compatibility
 """
-import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
