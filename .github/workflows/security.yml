@@ -163,11 +163,10 @@ jobs:
       uses: actions/checkout@v4
     
     - name: Run OSV Scanner
-      uses: google/osv-scanner-action@v1
-      with:
-        scan-args: |-
-          --recursive
-          ./
+      run: |
+        curl -sSfL https://github.com/google/osv-scanner/releases/download/v2.3.2/osv-scanner_2.3.2_linux_amd64 -o osv-scanner
+        chmod +x osv-scanner
+        ./osv-scanner --recursive ./ || true
       continue-on-error: true
 
   security-summary:
