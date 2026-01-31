@@ -9,7 +9,6 @@ These tests ensure that:
 """
 import pytest
 from fastapi.testclient import TestClient
-import json
 
 from app.main import app
 from app.models import ActorType, ActionType, EventStatus, AuditEvent
