@@ -114,22 +114,25 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 black isort
     
-    - name: Run flake8
+    - name: Run flake8 - Critical Errors
       run: |
         # Stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=venv,env,.venv
-        # Exit-zero treats all errors as warnings
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=venv,env,.venv
+    
+    - name: Run flake8 - Code Quality
+      run: |
+        # Check code quality and complexity
+        flake8 . --count --max-complexity=10 --max-line-length=127 --statistics --exclude=venv,env,.venv
       continue-on-error: true
     
     - name: Check code formatting with black
       run: |
-        black --check --diff backend/ sdk/ demo/ || true
+        black --check --diff backend/ sdk/ demo/
       continue-on-error: true
     
     - name: Check import sorting with isort
       run: |
-        isort --check-only --diff backend/ sdk/ demo/ || true
+        isort --check-only --diff backend/ sdk/ demo/
       continue-on-error: true
 
   build-docker:
@@ -225,3 +228,37 @@ jobs:
         
         # Test event retrieval
         curl -f http://localhost:8000/v1/agents/test-agent/events || exit 1
+
+  contract-validation:
+    name: Contract Validation Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install backend dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r backend/requirements.txt
+        pip install pytest pytest-cov httpx
+    
+    - name: Run backend contract tests
+      working-directory: backend
+      run: |
+        pytest tests/test_contracts.py -v --cov=app --cov-report=term-missing
+    
+    - name: Install SDK
+      run: |
+        pip install -e sdk/
+        pip install pytest pytest-cov
+    
+    - name: Run SDK contract tests
+      working-directory: sdk
+      run: |
+        pytest tests/test_contracts.py -v --cov=aimgentix --cov-report=term-missing
