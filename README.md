@@ -127,6 +127,37 @@ See [mvp-master-plan.md](mvp-master-plan.md) for full details.
 
 ---
 
+## ❓ FAQ
+
+### **Does AIMgentix have any usage limits or pricing?**
+
+**No!** AIMgentix is:
+- ✅ Completely open source (MIT License)
+- ✅ No usage limits or rate limiting
+- ✅ No premium tiers or paid features  
+- ✅ Runs entirely on your own infrastructure
+
+You control all aspects of deployment and can handle unlimited audit events.
+
+### **What does "2 premium requests" mean in GitHub Codespaces?**
+
+This refers to **GitHub Codespaces usage limits**, not AIMgentix:
+
+- GitHub's free tier includes 120 core-hours/month (≈60 hours on a 2-core machine)
+- When you exceed this, GitHub may prompt for paid Codespaces usage
+- **Alternative**: Use local development (VS Code Dev Containers or direct setup) - completely free with no limits
+
+[Learn more about GitHub Codespaces billing](https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces)
+
+### **How do I avoid Codespaces limits?**
+
+Three options:
+1. **VS Code Dev Containers** (locally with Docker) - unlimited, free
+2. **Regular local setup** - no containers needed, see Quick Start above
+3. **Upgrade GitHub account** - for more Codespaces hours if you prefer cloud development
+
+---
+
 ## 🤝 Contributing
 
 This is an early-stage project. Feedback and contributions welcome!

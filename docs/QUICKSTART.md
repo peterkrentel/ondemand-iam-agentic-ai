@@ -184,6 +184,25 @@ audit_client.flush()
 
 ---
 
+## FAQ
+
+### **Q: Does AIMgentix have any usage limits?**
+
+**A:** No! AIMgentix is open source with no limits:
+- No rate limiting on API requests
+- No premium tiers or paid features
+- Handle unlimited audit events
+- Deploy on your own infrastructure
+
+### **Q: What about "2 premium requests" in GitHub Codespaces?**
+
+**A:** That's a GitHub Codespaces limit, not AIMgentix:
+- GitHub's free tier: 120 core-hours/month
+- To avoid limits: use local setup (this guide) or VS Code Dev Containers
+- [More about Codespaces billing](https://docs.github.com/en/billing/managing-billing-for-github-codespaces/about-billing-for-github-codespaces)
+
+---
+
 ## Troubleshooting
 
 **Problem**: `Connection refused` when running demo
