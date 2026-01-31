@@ -245,7 +245,7 @@ class TestEnumExhaustiveness:
     
     def test_all_actor_types_creatable(self):
         """Verify events can be created with all ActorType values"""
-        for actor in ActorType:
+        for actor in ActorType.__members__.values():
             event = AuditEvent(
                 agent_instance_id="test-agent",
                 trace_id="test-trace",
@@ -260,7 +260,7 @@ class TestEnumExhaustiveness:
     
     def test_all_action_types_creatable(self):
         """Verify events can be created with all ActionType values"""
-        for action in ActionType:
+        for action in ActionType.__members__.values():
             event = AuditEvent(
                 agent_instance_id="test-agent",
                 trace_id="test-trace",
@@ -275,7 +275,7 @@ class TestEnumExhaustiveness:
     
     def test_all_status_types_creatable(self):
         """Verify events can be created with all EventStatus values"""
-        for status in EventStatus:
+        for status in EventStatus.__members__.values():
             event = AuditEvent(
                 agent_instance_id="test-agent",
                 trace_id="test-trace",

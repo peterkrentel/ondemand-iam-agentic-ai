@@ -94,7 +94,7 @@ class TestEnumExhaustiveness:
     def test_all_actor_types_valid(self):
         """Verify all ActorType enum values are accepted"""
         import uuid
-        for actor_type in ActorType:
+        for actor_type in ActorType.__members__.values():
             event_data = {
                 "event_id": str(uuid.uuid4()),
                 "agent_instance_id": "test-agent",
@@ -110,7 +110,7 @@ class TestEnumExhaustiveness:
     def test_all_action_types_valid(self):
         """Verify all ActionType enum values are accepted"""
         import uuid
-        for action_type in ActionType:
+        for action_type in ActionType.__members__.values():
             event_data = {
                 "event_id": str(uuid.uuid4()),
                 "agent_instance_id": "test-agent",
@@ -126,7 +126,7 @@ class TestEnumExhaustiveness:
     def test_all_status_types_valid(self):
         """Verify all EventStatus enum values are accepted"""
         import uuid
-        for status in EventStatus:
+        for status in EventStatus.__members__.values():
             event_data = {
                 "event_id": str(uuid.uuid4()),
                 "agent_instance_id": "test-agent",
