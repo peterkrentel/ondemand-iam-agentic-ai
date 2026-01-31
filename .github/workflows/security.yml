@@ -165,8 +165,10 @@ jobs:
     - name: Run OSV Scanner
       run: |
         curl -sSfL https://github.com/google/osv-scanner/releases/download/v2.3.2/osv-scanner_linux_amd64 -o osv-scanner
+        curl -sSfL https://github.com/google/osv-scanner/releases/download/v2.3.2/osv-scanner_SHA256SUMS -o osv-scanner_SHA256SUMS
+        echo "$(grep osv-scanner_linux_amd64 osv-scanner_SHA256SUMS | awk '{print $1}')  osv-scanner" | sha256sum -c -
         chmod +x osv-scanner
-        ./osv-scanner --recursive ./ || true
+        ./osv-scanner --recursive ./
       continue-on-error: true
 
   security-summary:
