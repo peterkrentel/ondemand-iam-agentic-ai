@@ -112,7 +112,7 @@ class TestEnumExhaustiveness:
         import uuid
         for action_type in ActionType:
             event_data = {
-                "event_id": str(uuid.uuid4()),
+            event_data = {
                 "agent_instance_id": "test-agent",
                 "trace_id": "test-trace",
                 "actor": "agent",
