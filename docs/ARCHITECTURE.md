@@ -1,4 +1,4 @@
-# 🏗️ Sentinel Architecture
+# 🏗️ OnDemand IAM Agentic AI Architecture
 
 **Last Updated**: 2026-01-25
 
@@ -6,7 +6,7 @@
 
 ## 🎯 System Overview
 
-Sentinel is a **lightweight audit layer** for AI agents. It captures agent actions (tool calls, API requests, file access) and provides a complete audit trail for visibility, compliance, and security.
+OnDemand IAM Agentic AI is a **lightweight audit layer** for AI agents. It captures agent actions (tool calls, API requests, file access) and provides a complete audit trail for visibility, compliance, and security.
 
 ### **Design Principles**
 
@@ -23,7 +23,7 @@ Sentinel is a **lightweight audit layer** for AI agents. It captures agent actio
 ```mermaid
 graph TB
     Agent[AI Agent Runtime]
-    SDK[Sentinel SDK]
+    SDK[OnDemand IAM SDK]
     API[FastAPI Backend]
     DB[(SQLite/DynamoDB)]
     UI[Web Dashboard]
@@ -70,7 +70,7 @@ sequenceDiagram
 
 ## 🧩 Component Details
 
-### **1. Sentinel SDK** (`sdk/sentinel_audit/`)
+### **1. OnDemand IAM Agentic AI SDK** (`sdk/ondemand_iam_agentic_ai/`)
 
 **Purpose**: Non-blocking event capture with buffering and retry logic
 
@@ -194,7 +194,7 @@ CREATE INDEX idx_timestamp ON audit_events(timestamp);
 
 ### **LangChain Agents**
 ```python
-from sentinel_audit import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
+from ondemand_iam_agentic_ai import AuditClient, AuditEvent, ActorType, ActionType, EventStatus
 
 audit_client = AuditClient()
 

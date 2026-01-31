@@ -1,5 +1,5 @@
 """
-Sentinel Audit API - FastAPI backend for agent audit trail capture
+OnDemand IAM Agentic AI API - FastAPI backend for agent audit trail capture
 """
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,9 +16,36 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Sentinel Audit API",
-    description="Agent audit trail capture and retrieval",
-    version="0.1.0"
+    title="OnDemand IAM Agentic AI API",
+    description="""
+    ## Lightweight audit layer for AI agents
+    
+    **Privacy-first. Production-ready.**
+    
+    Capture what your AI agents do - tool calls, API requests, file access - 
+    and get a complete audit trail for visibility, compliance, and security.
+    
+    ### Features
+    - ✅ Non-blocking event capture
+    - ✅ Privacy-first (redacts sensitive data by default)
+    - ✅ Framework agnostic
+    - ✅ Simple integration
+    
+    ### Authentication
+    Currently no authentication required (development mode).
+    Production deployments should implement proper authentication.
+    """,
+    version="0.1.0",
+    contact={
+        "name": "Peter Krentel",
+        "url": "https://github.com/peterkrentel/ondemand-iam-agentic-ai",
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 # CORS middleware for local development
@@ -39,22 +66,42 @@ def startup_event():
     logger.info("Database initialized successfully")
 
 
-@app.get("/")
+@app.get("/", tags=["Health"])
 def root():
-    """Health check endpoint"""
+    """
+    Health check endpoint
+    
+    Returns the service status and version information.
+    """
     return {
-        "service": "Sentinel Audit API",
+        "service": "OnDemand IAM Agentic AI API",
         "status": "operational",
-        "version": "0.1.0"
+        "version": "0.1.0",
+        "docs": "/docs"
     }
 
 
-@app.post("/v1/events", status_code=201)
+@app.post("/v1/events", status_code=201, tags=["Events"])
 def create_event(event: AuditEvent, db: Session = Depends(get_db)):
     """
     Capture a new audit event
     
-    Privacy-first: metadata is redacted by default
+    **Privacy-first**: metadata is redacted by default. Only capture what you need.
+    
+    ### Request Body
+    - **event_id**: Unique event identifier (UUID)
+    - **timestamp**: ISO8601 timestamp (auto-generated if not provided)
+    - **agent_instance_id**: Unique agent instance identifier
+    - **trace_id**: Trace ID for correlating related events
+    - **actor**: Type of actor (agent, human, system)
+    - **action_type**: Type of action performed
+    - **resource**: Resource being accessed (URL, file path, etc.)
+    - **status**: Status of the action (success, error, pending)
+    - **latency_ms**: Latency in milliseconds (optional)
+    - **metadata**: Additional context, redacted by default (optional)
+    
+    ### Response
+    Returns the event_id and capture status.
     """
     try:
         # Create database record
@@ -68,7 +115,7 @@ def create_event(event: AuditEvent, db: Session = Depends(get_db)):
             resource=event.resource,
             status=event.status.value,
             latency_ms=event.latency_ms,
-            metadata=event.metadata
+            event_metadata=event.metadata
         )
         
         db.add(db_event)
@@ -85,7 +132,7 @@ def create_event(event: AuditEvent, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Failed to capture event: {str(e)}")
 
 
-@app.get("/v1/agents/{agent_id}/events", response_model=AuditEventResponse)
+@app.get("/v1/agents/{agent_id}/events", response_model=AuditEventResponse, tags=["Events"])
 def get_agent_events(
     agent_id: str,
     limit: int = 100,
@@ -94,7 +141,16 @@ def get_agent_events(
     """
     Retrieve audit events for a specific agent
     
-    Returns events in reverse chronological order (newest first)
+    Returns events in reverse chronological order (newest first).
+    
+    ### Path Parameters
+    - **agent_id**: Unique agent instance identifier
+    
+    ### Query Parameters
+    - **limit**: Maximum number of events to return (default: 100, max: 1000)
+    
+    ### Response
+    Returns list of events, total count, and agent_instance_id.
     """
     try:
         # Query events for this agent
@@ -116,7 +172,7 @@ def get_agent_events(
                 resource=e.resource,
                 status=e.status,
                 latency_ms=e.latency_ms,
-                metadata=e.metadata or {}
+                metadata=e.event_metadata or {}
             )
             for e in events
         ]

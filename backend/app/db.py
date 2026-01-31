@@ -8,7 +8,7 @@ from datetime import datetime
 import os
 
 # Database setup
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./sentinel_audit.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ondemand_iam_agentic_ai.db")
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -28,7 +28,7 @@ class AuditEventDB(Base):
     resource = Column(String, nullable=False)
     status = Column(String, nullable=False)
     latency_ms = Column(Integer, nullable=True)
-    metadata = Column(JSON, nullable=True)
+    event_metadata = Column(JSON, nullable=True)
 
 
 def init_db():

@@ -1,6 +1,6 @@
-# 🐳 Sentinel Dev Container
+# 🐳 OnDemand IAM Agentic AI Dev Container
 
-**One-click development environment for Sentinel Audit**
+**One-click development environment for OnDemand IAM Agentic AI**
 
 ---
 
@@ -35,7 +35,7 @@
 - ✅ Node.js 18 (for future frontend work)
 - ✅ Git
 - ✅ All Python dependencies pre-installed
-- ✅ Sentinel SDK installed in development mode
+- ✅ OnDemand IAM Agentic AI SDK installed in development mode
 - ✅ VS Code extensions (Python, linting, formatting)
 - ✅ Helpful shell aliases
 
@@ -58,7 +58,7 @@ view-events    # View captured events (pretty-printed JSON)
 
 The dev container automatically forwards these ports:
 
-- **8000** - Sentinel API (FastAPI backend)
+- **8000** - OnDemand IAM Agentic AI API (FastAPI backend)
 - **3000** - Reserved for future UI server
 
 You can access them at:

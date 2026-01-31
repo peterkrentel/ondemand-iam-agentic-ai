@@ -1,5 +1,5 @@
 """
-Sentinel Audit SDK - Python client for agent audit trail capture
+OnDemand IAM Agentic AI SDK - Python client for agent audit trail capture
 """
 from .client import AuditClient
 from .events import AuditEvent, ActorType, ActionType, EventStatus

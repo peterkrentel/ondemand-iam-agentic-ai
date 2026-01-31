@@ -1,5 +1,5 @@
 """
-Event models for the Sentinel Audit API
+Event models for the OnDemand IAM Agentic AI API
 """
 from datetime import datetime
 from typing import Optional, Dict, Any

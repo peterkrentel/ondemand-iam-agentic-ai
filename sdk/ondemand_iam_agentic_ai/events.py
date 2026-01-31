@@ -1,5 +1,5 @@
 """
-Event types and models for the Sentinel Audit SDK
+Event types and models for OnDemand IAM Agentic AI SDK
 """
 from datetime import datetime
 from typing import Optional, Dict, Any
