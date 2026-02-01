@@ -1,0 +1,3 @@
+# S3 Lifecycle Agent Dependencies
+boto3>=1.28.0
+
