@@ -137,6 +137,7 @@ jobs:
     name: Approve Action
     needs: investigate
     runs-on: ubuntu-latest
+    permissions: {}  # No permissions needed - approval only
     environment:
       name: agent-approval
       url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -273,6 +274,8 @@ jobs:
     needs: [investigate, approve, act]
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read  # Read-only for summary generation
     
     steps:
       - name: Download All Artifacts
