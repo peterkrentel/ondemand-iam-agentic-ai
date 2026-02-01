@@ -8,12 +8,16 @@ jobs:
   check-spec-drift:
     name: Check Spec Drift
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0  # Need full history to compare changes
+
+    # NOTE: Workflow changes are NOT monitored here to avoid false positives
+    # (action version bumps, formatting, step renames don't need spec updates).
+    # If you add workflow inputs/outputs that become contracts, add them manually.
     
     - name: Get changed files
       id: changed-files
@@ -22,18 +26,34 @@ jobs:
         files: |
           backend/app/models.py
           sdk/aimgentix/events.py
-          .github/workflows/**
-    
-    - name: Check if specs were updated
+
+    - name: Check for schema-affecting changes
       if: steps.changed-files.outputs.any_changed == 'true'
+      id: schema-check
       run: |
         echo "Contract-bearing files changed:"
         echo "${{ steps.changed-files.outputs.all_changed_files }}"
-        
+
+        # Check if changes are only whitespace/comments (allow these without spec update)
+        REAL_CHANGES=false
+        for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          # Check if there are non-whitespace changes
+          if git diff origin/${{ github.base_ref }}...HEAD -- "$file" | grep -E '^\+[^+\s]|^-[^-\s]' > /dev/null; then
+            REAL_CHANGES=true
+            break
+          fi
+        done
+
+        if [ "$REAL_CHANGES" = "false" ]; then
+          echo "✅ Only whitespace/comment changes detected - no spec update required"
+          exit 0
+        fi
+
         # Check if any spec files were also changed
         SPEC_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^specs/.*\.md$' || true)
-        
+
         if [ -z "$SPEC_CHANGED" ]; then
+          echo "schema_changed=true" >> $GITHUB_OUTPUT
           echo "❌ ERROR: Contract-bearing files changed but no specs updated"
           echo ""
           echo "Files changed:"
@@ -41,20 +61,32 @@ jobs:
           echo ""
           echo "Required action:"
           echo "- If you changed event schema (models.py, events.py): update specs/event-schema.md"
-          echo "- If you changed workflow contracts: update or create a spec"
-          echo "- If this is a non-breaking internal change, add label 'internal-only' to bypass"
+          echo "- If this is a non-breaking internal change: add label 'internal-only' AND explain in PR description"
           echo ""
           echo "See specs/SPEC_POLICY.md for guidance"
           exit 1
         else
           echo "✅ Specs updated: $SPEC_CHANGED"
         fi
-    
-    - name: Allow bypass with label
+
+    - name: Check bypass label has justification
       if: failure() && contains(github.event.pull_request.labels.*.name, 'internal-only')
       run: |
-        echo "⚠️  Bypassing spec check due to 'internal-only' label"
-        exit 0
+        # Check if PR description contains justification
+        PR_BODY="${{ github.event.pull_request.body }}"
+
+        if echo "$PR_BODY" | grep -iE 'internal.only|internal change|no schema change|refactor' > /dev/null; then
+          echo "✅ Bypass approved: 'internal-only' label with justification in PR description"
+          exit 0
+        else
+          echo "❌ ERROR: 'internal-only' label requires justification in PR description"
+          echo ""
+          echo "Add a line to your PR description explaining why this is internal-only, e.g.:"
+          echo "- 'Internal-only: refactoring without schema changes'"
+          echo "- 'Internal-only: renaming internal variables'"
+          echo "- 'No schema change: only added comments'"
+          exit 1
+        fi
 
   run-contract-tests:
     name: Run Contract Tests
