@@ -238,7 +238,8 @@ def get_agent_events(agent_id: str, limit: int = 100, db: Session = Depends(get_
 
         total = db.query(AuditEventDB).filter(AuditEventDB.agent_instance_id == agent_id).count()
 
-        logger.info(f"Retrieved {len(audit_events)} events for agent {_sanitize_for_log(agent_id)}")
+        safe_agent_id = _sanitize_for_log(agent_id)
+        logger.info(f"Retrieved {len(audit_events)} events for agent {safe_agent_id}")
 
         return AuditEventResponse(events=audit_events, total=total, agent_instance_id=agent_id)
 
