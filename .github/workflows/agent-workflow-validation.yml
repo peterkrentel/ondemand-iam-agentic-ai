@@ -167,7 +167,7 @@ jobs:
 
           for policy_path in policy_files:
               print(f"\n📋 Validating: {policy_path}")
-              
+
               with open(policy_path) as f:
                   try:
                       policy = yaml.safe_load(f)
@@ -194,4 +194,9 @@ jobs:
 
           print("\n✅ All policy files are valid!")
           EOF
+
+      - name: Run agent policy enforcement tests
+        run: |
+          pip install pytest
+          pytest tests/test_agent_policy_enforcement.py -v
 
