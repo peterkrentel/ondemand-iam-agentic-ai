@@ -13,10 +13,7 @@ Per spec, agents MUST:
 4. Emit policy_check audit events
 5. Respect policy decisions (deny if policy says no)
 """
-import ast
-import os
 import re
-import glob
 import pytest
 from pathlib import Path
 

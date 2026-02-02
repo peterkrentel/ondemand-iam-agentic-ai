@@ -4,7 +4,6 @@ Contract tests for GitHub Actions agent workflows.
 These tests validate that agent workflows follow the three-phase pattern
 defined in specs/gha-agent-runtime.md and specs/gha-contracts.md.
 """
-import os
 import glob
 import pytest
 import yaml
