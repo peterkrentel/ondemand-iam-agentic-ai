@@ -1,6 +1,7 @@
 """
 Tests for the AIMgentix SDK
 """
+
 from unittest.mock import Mock, patch
 import requests
 
@@ -48,9 +49,9 @@ def test_audit_event_creation():
         action_type=ActionType.TOOL_CALL,
         resource="test_tool",
         status=EventStatus.SUCCESS,
-        latency_ms=100
+        latency_ms=100,
     )
-    
+
     assert event.agent_instance_id == "test-agent"
     assert event.trace_id == "test-trace"
     assert event.actor == ActorType.AGENT
@@ -71,9 +72,9 @@ def test_audit_event_with_metadata():
         action_type=ActionType.TOOL_CALL,
         resource="test_tool",
         status=EventStatus.SUCCESS,
-        metadata={"key": "value", "count": 42}
+        metadata={"key": "value", "count": 42},
     )
-    
+
     assert event.metadata == {"key": "value", "count": 42}
 
 
@@ -83,14 +84,14 @@ def test_audit_client_initialization():
     assert client.api_url == "http://localhost:8000"
 
 
-@patch('requests.post')
+@patch("requests.post")
 def test_audit_client_capture(mock_post):
     """Test capturing an event with AuditClient"""
     mock_response = Mock()
     mock_response.status_code = 201
     mock_response.json.return_value = {"event_id": "test-id", "status": "captured"}
     mock_post.return_value = mock_response
-    
+
     client = AuditClient(api_url="http://localhost:8000")
     event = AuditEvent(
         agent_instance_id="test-agent",
@@ -98,9 +99,9 @@ def test_audit_client_capture(mock_post):
         actor=ActorType.AGENT,
         action_type=ActionType.TOOL_CALL,
         resource="test_tool",
-        status=EventStatus.SUCCESS
+        status=EventStatus.SUCCESS,
     )
-    
+
     # Capture returns None (async buffering)
     client.capture(event)
     # Flush to send events
@@ -108,11 +109,11 @@ def test_audit_client_capture(mock_post):
     assert mock_post.called
 
 
-@patch('requests.post')
+@patch("requests.post")
 def test_audit_client_capture_failure(mock_post):
     """Test handling capture failure"""
     mock_post.side_effect = requests.exceptions.RequestException("Connection error")
-    
+
     client = AuditClient(api_url="http://localhost:8000")
     event = AuditEvent(
         agent_instance_id="test-agent",
@@ -120,9 +121,9 @@ def test_audit_client_capture_failure(mock_post):
         actor=ActorType.AGENT,
         action_type=ActionType.TOOL_CALL,
         resource="test_tool",
-        status=EventStatus.SUCCESS
+        status=EventStatus.SUCCESS,
     )
-    
+
     # Should not raise, just log error
     client.capture(event)
     # Flush will attempt to send and fail
@@ -138,16 +139,16 @@ def test_audit_client_context_manager():
         assert client.api_url == "http://localhost:8000"
 
 
-@patch('requests.post')
+@patch("requests.post")
 def test_audit_client_buffer_and_flush(mock_post):
     """Test buffering and flushing events"""
     mock_response = Mock()
     mock_response.status_code = 201
     mock_response.json.return_value = {"event_id": "test-id", "status": "captured"}
     mock_post.return_value = mock_response
-    
+
     client = AuditClient(api_url="http://localhost:8000")
-    
+
     # Create multiple events
     for i in range(3):
         event = AuditEvent(
@@ -156,10 +157,10 @@ def test_audit_client_buffer_and_flush(mock_post):
             actor=ActorType.AGENT,
             action_type=ActionType.TOOL_CALL,
             resource="test_tool",
-            status=EventStatus.SUCCESS
+            status=EventStatus.SUCCESS,
         )
         client.capture(event)
-    
+
     # Flush should be called
     client.flush()
     assert mock_post.call_count >= 3

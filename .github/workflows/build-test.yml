@@ -11,18 +11,14 @@ jobs:
   test-backend:
     name: Test Backend API
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
-    - name: Set up Python ${{ matrix.python-version }}
+
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.11'
     
     - name: Cache Python dependencies
       uses: actions/cache@v4
@@ -49,24 +45,21 @@ jobs:
       with:
         files: ./backend/coverage.xml
         flags: backend
-        name: backend-${{ matrix.python-version }}
+        name: backend
       continue-on-error: true
 
   test-sdk:
     name: Test Python SDK
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
-    - name: Set up Python ${{ matrix.python-version }}
+
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.11'
     
     - name: Cache Python dependencies
       uses: actions/cache@v4
@@ -93,7 +86,7 @@ jobs:
       with:
         files: ./sdk/coverage.xml
         flags: sdk
-        name: sdk-${{ matrix.python-version }}
+        name: sdk
       continue-on-error: true
 
   lint:

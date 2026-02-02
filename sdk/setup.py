@@ -1,6 +1,7 @@
 """
 Setup script for AIMgentix SDK
 """
+
 from setuptools import setup, find_packages
 
 setup(
@@ -23,4 +24,3 @@ setup(
         "Programming Language :: Python :: 3.11",
     ],
 )
-

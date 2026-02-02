@@ -1,6 +1,7 @@
 """
 Event types and models for AIMgentix SDK
 """
+
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 from enum import Enum
@@ -10,6 +11,7 @@ import uuid
 
 class ActorType(str, Enum):
     """Type of actor performing the action"""
+
     AGENT = "agent"
     HUMAN = "human"
     SYSTEM = "system"
@@ -17,6 +19,7 @@ class ActorType(str, Enum):
 
 class ActionType(str, Enum):
     """Type of action being performed"""
+
     TOOL_CALL = "tool_call"
     HTTP_REQUEST = "http_request"
     DB_QUERY = "db_query"
@@ -28,6 +31,7 @@ class ActionType(str, Enum):
 
 class EventStatus(str, Enum):
     """Status of the event"""
+
     SUCCESS = "success"
     ERROR = "error"
     PENDING = "pending"
@@ -39,6 +43,7 @@ class AuditEvent:
     """
     Audit event data class
     """
+
     agent_instance_id: str
     trace_id: str
     actor: ActorType
@@ -53,9 +58,8 @@ class AuditEvent:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
         data = asdict(self)
-        data['timestamp'] = self.timestamp.isoformat()
-        data['actor'] = self.actor.value
-        data['action_type'] = self.action_type.value
-        data['status'] = self.status.value
+        data["timestamp"] = self.timestamp.isoformat()
+        data["actor"] = self.actor.value
+        data["action_type"] = self.action_type.value
+        data["status"] = self.status.value
         return data
-

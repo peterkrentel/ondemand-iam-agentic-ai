@@ -1,6 +1,7 @@
 """
 AIMgentix API - FastAPI backend for agent audit trail capture
 """
+
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -24,6 +25,7 @@ ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://loc
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to all responses"""
+
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         # Add security headers
@@ -63,18 +65,18 @@ app = FastAPI(
     title="AIMgentix API",
     description="""
     ## Lightweight audit layer for AI agents
-    
+
     **Privacy-first. Production-ready.**
-    
-    Capture what your AI agents do - tool calls, API requests, file access - 
+
+    Capture what your AI agents do - tool calls, API requests, file access -
     and get a complete audit trail for visibility, compliance, and security.
-    
+
     ### Features
     - ✅ Non-blocking event capture
     - ✅ Privacy-first (redacts sensitive data by default)
     - ✅ Framework agnostic
     - ✅ Simple integration
-    
+
     ### Authentication
     Currently no authentication required (development mode).
     Production deployments should implement proper authentication.
@@ -122,24 +124,19 @@ else:
 def root():
     """
     Health check endpoint
-    
+
     Returns the service status and version information.
     """
-    return {
-        "service": "AIMgentix API",
-        "status": "operational",
-        "version": "0.1.0",
-        "docs": "/docs"
-    }
+    return {"service": "AIMgentix API", "status": "operational", "version": "0.1.0", "docs": "/docs"}
 
 
 @app.post("/v1/events", status_code=201, tags=["Events"])
 def create_event(event: AuditEvent, db: Session = Depends(get_db)):
     """
     Capture a new audit event
-    
+
     **Privacy-first**: metadata is redacted by default. Only capture what you need.
-    
+
     ### Request Body
     - **event_id**: Unique event identifier (UUID)
     - **timestamp**: ISO8601 timestamp (auto-generated if not provided)
@@ -151,7 +148,7 @@ def create_event(event: AuditEvent, db: Session = Depends(get_db)):
     - **status**: Status of the action (success, error, pending)
     - **latency_ms**: Latency in milliseconds (optional)
     - **metadata**: Additional context, redacted by default (optional)
-    
+
     ### Response
     Returns the event_id and capture status.
     """
@@ -167,19 +164,19 @@ def create_event(event: AuditEvent, db: Session = Depends(get_db)):
             resource=event.resource,
             status=event.status.value,
             latency_ms=event.latency_ms,
-            event_metadata=event.metadata
+            event_metadata=event.metadata,
         )
-        
+
         db.add(db_event)
         db.commit()
         db.refresh(db_event)
-        
+
         safe_event_id = _sanitize_for_log(event.event_id)
         safe_agent_id = _sanitize_for_log(event.agent_instance_id)
         logger.info(f"Event captured: {safe_event_id} for agent {safe_agent_id}")
-        
+
         return {"event_id": event.event_id, "status": "captured"}
-    
+
     except Exception as e:
         logger.error(f"Error capturing event: {str(e)}")
         db.rollback()
@@ -188,33 +185,31 @@ def create_event(event: AuditEvent, db: Session = Depends(get_db)):
 
 
 @app.get("/v1/agents/{agent_id}/events", response_model=AuditEventResponse, tags=["Events"])
-def get_agent_events(
-    agent_id: str,
-    limit: int = 100,
-    db: Session = Depends(get_db)
-):
+def get_agent_events(agent_id: str, limit: int = 100, db: Session = Depends(get_db)):
     """
     Retrieve audit events for a specific agent
-    
+
     Returns events in reverse chronological order (newest first).
-    
+
     ### Path Parameters
     - **agent_id**: Unique agent instance identifier
-    
+
     ### Query Parameters
     - **limit**: Maximum number of events to return (default: 100, max: 1000)
-    
+
     ### Response
     Returns list of events, total count, and agent_instance_id.
     """
     try:
         # Query events for this agent
-        events = db.query(AuditEventDB).filter(
-            AuditEventDB.agent_instance_id == agent_id
-        ).order_by(
-            AuditEventDB.timestamp.desc()
-        ).limit(limit).all()
-        
+        events = (
+            db.query(AuditEventDB)
+            .filter(AuditEventDB.agent_instance_id == agent_id)
+            .order_by(AuditEventDB.timestamp.desc())
+            .limit(limit)
+            .all()
+        )
+
         # Convert to response model
         audit_events = [
             AuditEvent(
@@ -227,25 +222,18 @@ def get_agent_events(
                 resource=e.resource,
                 status=e.status,
                 latency_ms=e.latency_ms,
-                metadata=e.event_metadata or {}
+                metadata=e.event_metadata or {},
             )
             for e in events
         ]
-        
-        total = db.query(AuditEventDB).filter(
-            AuditEventDB.agent_instance_id == agent_id
-        ).count()
-        
+
+        total = db.query(AuditEventDB).filter(AuditEventDB.agent_instance_id == agent_id).count()
+
         logger.info(f"Retrieved {len(audit_events)} events for agent {agent_id}")
-        
-        return AuditEventResponse(
-            events=audit_events,
-            total=total,
-            agent_instance_id=agent_id
-        )
-    
+
+        return AuditEventResponse(events=audit_events, total=total, agent_instance_id=agent_id)
+
     except Exception as e:
         logger.error(f"Error retrieving events: {str(e)}")
         # Don't expose internal error details to client
         raise HTTPException(status_code=500, detail="Failed to retrieve events")
-
