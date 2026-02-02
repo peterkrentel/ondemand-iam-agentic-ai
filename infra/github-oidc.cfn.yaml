@@ -1,0 +1,134 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: |
+  GitHub Actions OIDC integration for AIMgentix agents.
+  Creates OIDC provider + IAM role with scoped S3 permissions.
+  
+  Deploy: ./deploy-oidc.sh <github-org> <github-repo>
+  Delete: aws cloudformation delete-stack --stack-name aimgentix-github-oidc
+
+Parameters:
+  GitHubOrg:
+    Type: String
+    Description: GitHub organization or username
+
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository name
+
+Resources:
+  # =========================================================================
+  # GitHub OIDC Identity Provider
+  # One per AWS account - allows GitHub to authenticate via OIDC
+  # =========================================================================
+  GitHubOIDCProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      # AWS auto-validates GitHub's certificate now, but thumbprint still required
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+        - 1c58a3a8518e8759bf075b76b750d4f2df264fcd
+      Tags:
+        - Key: Purpose
+          Value: GitHubActionsOIDC
+        - Key: ManagedBy
+          Value: AIMgentix
+
+  # =========================================================================
+  # IAM Role for GitHub Actions
+  # GitHub workflows assume this role via OIDC - no secrets needed
+  # =========================================================================
+  GitHubActionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'github-oidc-${GitHubRepo}'
+      Description: !Sub 'GitHub Actions OIDC role for ${GitHubOrg}/${GitHubRepo}'
+      MaxSessionDuration: 3600  # 1 hour - matches workflow job timeout
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !GetAtt GitHubOIDCProvider.Arn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                # Only this repo can assume this role
+                token.actions.githubusercontent.com:sub: !Sub 'repo:${GitHubOrg}/${GitHubRepo}:*'
+      Tags:
+        - Key: Purpose
+          Value: GitHubActionsOIDC
+        - Key: Repository
+          Value: !Sub '${GitHubOrg}/${GitHubRepo}'
+
+  # =========================================================================
+  # S3 Permissions for Demo Agent
+  # Scoped to aimgentix-demo-* buckets only
+  # =========================================================================
+  S3DemoPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: aimgentix-s3-demo
+      Roles:
+        - !Ref GitHubActionsRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          # Read-only: List all buckets (for investigate phase)
+          - Sid: ListBuckets
+            Effect: Allow
+            Action:
+              - s3:ListAllMyBuckets
+              - s3:GetBucketLocation
+            Resource: '*'
+
+          # Write: Only demo buckets
+          - Sid: DemoBucketOperations
+            Effect: Allow
+            Action:
+              - s3:CreateBucket
+              - s3:DeleteBucket
+              - s3:PutLifecycleConfiguration
+              - s3:GetLifecycleConfiguration
+              - s3:PutObject
+              - s3:GetObject
+              - s3:DeleteObject
+              - s3:ListBucket
+            Resource:
+              - 'arn:aws:s3:::aimgentix-demo-*'
+              - 'arn:aws:s3:::aimgentix-demo-*/*'
+
+          # Explicit deny: Never touch prod
+          - Sid: DenyProdBuckets
+            Effect: Deny
+            Action:
+              - s3:*
+            Resource:
+              - 'arn:aws:s3:::prod-*'
+              - 'arn:aws:s3:::prod-*/*'
+
+Outputs:
+  RoleArn:
+    Description: Add this to GitHub repo secrets as AWS_ROLE_ARN
+    Value: !GetAtt GitHubActionsRole.Arn
+
+  OIDCProviderArn:
+    Description: GitHub OIDC Provider ARN
+    Value: !GetAtt GitHubOIDCProvider.Arn
+
+  WorkflowUsage:
+    Description: How to use in GitHub Actions workflow
+    Value: !Sub |
+      permissions:
+        id-token: write
+        contents: read
+      steps:
+        - uses: aws-actions/configure-aws-credentials@v4
+          with:
+            role-to-assume: ${GitHubActionsRole.Arn}
+            aws-region: us-east-1
+

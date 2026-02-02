@@ -28,6 +28,7 @@ def test_action_type_enum():
     assert ActionType.FILE_READ.value == "file_read"
     assert ActionType.FILE_WRITE.value == "file_write"
     assert ActionType.API_CALL.value == "api_call"
+    assert ActionType.POLICY_CHECK.value == "policy_check"
 
 
 def test_event_status_enum():
@@ -35,6 +36,7 @@ def test_event_status_enum():
     assert EventStatus.SUCCESS.value == "success"
     assert EventStatus.ERROR.value == "error"
     assert EventStatus.PENDING.value == "pending"
+    assert EventStatus.DENIED.value == "denied"
 
 
 def test_audit_event_creation():

@@ -1,0 +1,69 @@
+# Policy for S3 Lifecycle Demo Agent
+# See specs/gha-contracts.md for schema
+
+name: s3-lifecycle-agent
+version: 1
+
+# Allowed AWS actions
+allowed_actions:
+  # Investigation phase (read-only)
+  - type: s3:ListBuckets
+  - type: s3:GetBucketLocation
+  - type: s3:GetBucketLifecycleConfiguration
+  
+  # Action phase (write operations)
+  - type: s3:CreateBucket
+    conditions:
+      region: [us-east-1, us-west-2]
+      bucket_name_pattern: "aimgentix-demo-*"
+  
+  - type: s3:PutLifecycleConfiguration
+    conditions:
+      bucket_name_pattern: "aimgentix-demo-*"
+  
+  - type: s3:PutObject
+    conditions:
+      bucket_name_pattern: "aimgentix-demo-*"
+  
+  - type: s3:DeleteObject
+    conditions:
+      bucket_name_pattern: "aimgentix-demo-*"
+  
+  - type: s3:DeleteBucket
+    conditions:
+      bucket_name_pattern: "aimgentix-demo-*"
+    requires_approval: true
+
+# Explicitly denied actions
+denied_actions:
+  # Never allow operations on production buckets
+  - type: s3:*
+    conditions:
+      bucket_name_pattern: "prod-*"
+  
+  # Never allow public access changes
+  - type: s3:PutBucketPublicAccessBlock
+  - type: s3:PutBucketPolicy
+
+# Rate limits
+rate_limits:
+  - action: s3:CreateBucket
+    max_per_hour: 5
+  - action: s3:DeleteBucket
+    max_per_hour: 5
+
+# Auto-approve rules
+auto_approve:
+  - risk_level: low
+    actions:
+      - s3:ListBuckets
+      - s3:GetBucketLocation
+      - s3:GetBucketLifecycleConfiguration
+      - s3:CreateBucket
+      - s3:PutObject
+  
+  - risk_level: medium
+    actions:
+      - s3:PutLifecycleConfiguration
+      - s3:DeleteObject
+

@@ -1,0 +1,202 @@
+name: Agent Workflow Validation
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - '.github/workflows/*-agent.yml'
+      - '.github/workflows/*-agent-*.yml'
+      - '.github/agent-policies/**'
+
+jobs:
+  validate-agent-workflows:
+    name: Validate Agent Workflow Structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml jsonschema
+
+      - name: Validate agent workflows
+        run: |
+          python << 'EOF'
+          import os
+          import sys
+          import yaml
+          import glob
+
+          errors = []
+          warnings = []
+
+          # Find all agent workflow files
+          agent_workflows = glob.glob('.github/workflows/*-agent.yml') + \
+                           glob.glob('.github/workflows/*-agent-*.yml')
+
+          if not agent_workflows:
+              print("✅ No agent workflows found to validate")
+              sys.exit(0)
+
+          for workflow_path in agent_workflows:
+              print(f"\n📋 Validating: {workflow_path}")
+              
+              with open(workflow_path) as f:
+                  try:
+                      workflow = yaml.safe_load(f)
+                  except yaml.YAMLError as e:
+                      errors.append(f"{workflow_path}: Invalid YAML - {e}")
+                      continue
+
+              jobs = workflow.get('jobs', {})
+              
+              # Check for required jobs
+              has_investigate = 'investigate' in jobs
+              has_approve = 'approve' in jobs
+              has_act = 'act' in jobs
+
+              if not has_investigate:
+                  errors.append(f"{workflow_path}: Missing required 'investigate' job")
+              if not has_approve:
+                  errors.append(f"{workflow_path}: Missing required 'approve' job")
+              if not has_act:
+                  errors.append(f"{workflow_path}: Missing required 'act' job")
+
+              if not (has_investigate and has_approve and has_act):
+                  continue  # Can't validate structure without all jobs
+
+              # Validate INVESTIGATE job
+              investigate = jobs['investigate']
+              perms = investigate.get('permissions', {})
+              
+              # Check for explicit permissions
+              if not perms:
+                  errors.append(f"{workflow_path}: 'investigate' job must have explicit permissions")
+              elif perms == 'write-all' or perms.get('contents') == 'write':
+                  errors.append(f"{workflow_path}: 'investigate' job must be read-only (has write permissions)")
+              
+              # Check for outputs
+              if not investigate.get('outputs'):
+                  warnings.append(f"{workflow_path}: 'investigate' job should declare outputs")
+
+              # Validate APPROVE job
+              approve = jobs['approve']
+              
+              # Check for needs: investigate
+              needs = approve.get('needs', [])
+              if isinstance(needs, str):
+                  needs = [needs]
+              if 'investigate' not in needs:
+                  errors.append(f"{workflow_path}: 'approve' job must have 'needs: investigate'")
+              
+              # Check for environment (approval gate)
+              if not approve.get('environment'):
+                  warnings.append(f"{workflow_path}: 'approve' job should use a protected environment")
+
+              # Validate ACT job
+              act = jobs['act']
+              
+              # Check for needs: approve
+              needs = act.get('needs', [])
+              if isinstance(needs, str):
+                  needs = [needs]
+              if 'approve' not in needs:
+                  errors.append(f"{workflow_path}: 'act' job must have 'needs: approve'")
+              
+              # Check for explicit permissions
+              if not act.get('permissions'):
+                  errors.append(f"{workflow_path}: 'act' job must have explicit permissions")
+              
+              # Check for environment
+              if not act.get('environment'):
+                  warnings.append(f"{workflow_path}: 'act' job should use a protected environment")
+
+              # Check for artifact uploads (look in steps)
+              for job_name in ['investigate', 'act']:
+                  job = jobs[job_name]
+                  steps = job.get('steps', [])
+                  has_artifact_upload = any(
+                      'actions/upload-artifact' in str(step.get('uses', ''))
+                      for step in steps
+                  )
+                  if not has_artifact_upload:
+                      warnings.append(f"{workflow_path}: '{job_name}' job should upload artifacts")
+
+              print(f"  ✅ Structure validated")
+
+          # Print results
+          if warnings:
+              print("\n⚠️  WARNINGS:")
+              for w in warnings:
+                  print(f"  - {w}")
+
+          if errors:
+              print("\n❌ ERRORS:")
+              for e in errors:
+                  print(f"  - {e}")
+              print("\nSee specs/gha-agent-runtime.md for the required workflow pattern.")
+              sys.exit(1)
+
+          print("\n✅ All agent workflows are valid!")
+          EOF
+
+      - name: Validate policy files
+        run: |
+          python << 'EOF'
+          import os
+          import sys
+          import yaml
+          import glob
+
+          errors = []
+          policy_files = glob.glob('.github/agent-policies/*.yaml') + \
+                        glob.glob('.github/agent-policies/*.yml')
+
+          if not policy_files:
+              print("✅ No policy files found to validate")
+              sys.exit(0)
+
+          REQUIRED_FIELDS = ['name', 'version']
+
+          for policy_path in policy_files:
+              print(f"\n📋 Validating: {policy_path}")
+
+              with open(policy_path) as f:
+                  try:
+                      policy = yaml.safe_load(f)
+                  except yaml.YAMLError as e:
+                      errors.append(f"{policy_path}: Invalid YAML - {e}")
+                      continue
+
+              for field in REQUIRED_FIELDS:
+                  if field not in policy:
+                      errors.append(f"{policy_path}: Missing required field '{field}'")
+
+              # Validate version is integer
+              if 'version' in policy and not isinstance(policy['version'], int):
+                  errors.append(f"{policy_path}: 'version' must be an integer")
+
+              print(f"  ✅ Policy validated")
+
+          if errors:
+              print("\n❌ ERRORS:")
+              for e in errors:
+                  print(f"  - {e}")
+              print("\nSee specs/gha-contracts.md for the required policy schema.")
+              sys.exit(1)
+
+          print("\n✅ All policy files are valid!")
+          EOF
+
+      - name: Run agent policy enforcement tests
+        run: |
+          pip install pytest
+          pytest tests/test_agent_policy_enforcement.py -v
+

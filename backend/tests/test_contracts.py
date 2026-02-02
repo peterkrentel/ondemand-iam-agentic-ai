@@ -79,13 +79,13 @@ class TestOpenAPIContract:
         action_enum = schemas["ActionType"]
         assert sorted(action_enum["enum"]) == sorted([
             "tool_call", "http_request", "db_query",
-            "file_read", "file_write", "api_call"
+            "file_read", "file_write", "api_call", "policy_check"
         ])
-        
+
         # Check EventStatus enum
         assert "EventStatus" in schemas
         status_enum = schemas["EventStatus"]
-        assert sorted(status_enum["enum"]) == sorted(["success", "error", "pending"])
+        assert sorted(status_enum["enum"]) == sorted(["success", "error", "pending", "denied"])
 
 
 class TestEnumExhaustiveness:
@@ -261,8 +261,8 @@ class TestSchemaConsistency:
     def test_enum_count_consistency(self):
         """Verify enum counts match expected values"""
         assert len(ActorType) == 3, "ActorType should have exactly 3 values"
-        assert len(ActionType) == 6, "ActionType should have exactly 6 values"
-        assert len(EventStatus) == 3, "EventStatus should have exactly 3 values"
+        assert len(ActionType) == 7, "ActionType should have exactly 7 values"
+        assert len(EventStatus) == 4, "EventStatus should have exactly 4 values"
     
     def test_pydantic_model_serialization(self):
         """Verify Pydantic models serialize correctly"""
