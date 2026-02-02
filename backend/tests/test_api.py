@@ -1,6 +1,7 @@
 """
 Tests for the AIMgentix API
 """
+
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -27,7 +28,7 @@ def test_openapi_docs():
     """Test that OpenAPI documentation is accessible"""
     response = client.get("/docs")
     assert response.status_code == 200
-    
+
     response = client.get("/openapi.json")
     assert response.status_code == 200
     assert "openapi" in response.json()
@@ -44,9 +45,9 @@ def test_create_event():
         "resource": "test_tool",
         "status": "success",
         "latency_ms": 100,
-        "metadata": {"test": "data"}
+        "metadata": {"test": "data"},
     }
-    
+
     response = client.post("/v1/events", json=event_data)
     assert response.status_code == 201
     data = response.json()
@@ -64,12 +65,12 @@ def test_get_agent_events():
         "actor": "agent",
         "action_type": "tool_call",
         "resource": "test_tool",
-        "status": "success"
+        "status": "success",
     }
-    
+
     response = client.post("/v1/events", json=event_data)
     assert response.status_code == 201
-    
+
     # Now retrieve events
     response = client.get("/v1/agents/test-agent-002/events")
     assert response.status_code == 200
@@ -94,7 +95,7 @@ def test_create_event_validation():
         "event_id": "invalid",
         # Missing required fields
     }
-    
+
     response = client.post("/v1/events", json=invalid_event)
     assert response.status_code == 422  # Validation error
 
@@ -109,9 +110,9 @@ def test_actor_types():
             "actor": actor,
             "action_type": "tool_call",
             "resource": "test_tool",
-            "status": "success"
+            "status": "success",
         }
-        
+
         response = client.post("/v1/events", json=event_data)
         assert response.status_code == 201
 
@@ -119,7 +120,7 @@ def test_actor_types():
 def test_action_types():
     """Test different action types"""
     action_types = ["tool_call", "http_request", "db_query", "file_read", "file_write", "api_call", "policy_check"]
-    
+
     for i, action_type in enumerate(action_types):
         event_data = {
             "event_id": f"550e8400-e29b-41d4-a716-446655441{i:03d}",
@@ -128,9 +129,9 @@ def test_action_types():
             "actor": "agent",
             "action_type": action_type,
             "resource": f"test_{action_type}",
-            "status": "success"
+            "status": "success",
         }
-        
+
         response = client.post("/v1/events", json=event_data)
         assert response.status_code == 201
 
@@ -145,8 +146,8 @@ def test_event_status_types():
             "actor": "agent",
             "action_type": "tool_call",
             "resource": "test_tool",
-            "status": status
+            "status": status,
         }
-        
+
         response = client.post("/v1/events", json=event_data)
         assert response.status_code == 201

@@ -1,7 +1,7 @@
 # Event Schema Contract (v1)
 
 **Status**: Active
-**Last Updated**: 2026-02-01
+**Last Updated**: 2026-02-02
 **Applies To**: SDK → API → Database → UI
 **Why This Exists**: Event schema crosses all system boundaries. Changes break clients.
 **Validation**: `backend/app/models.py` (Pydantic), `backend/tests/test_contracts.py`

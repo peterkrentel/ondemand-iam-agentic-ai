@@ -1,6 +1,7 @@
 """
 Database setup and models for SQLite
 """
+
 from sqlalchemy import create_engine, Column, String, Integer, DateTime, JSON
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime, timezone
@@ -15,6 +16,7 @@ Base = declarative_base()
 
 class AuditEventDB(Base):
     """SQLAlchemy model for audit events"""
+
     __tablename__ = "audit_events"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -42,4 +44,3 @@ def get_db():
         yield db
     finally:
         db.close()
-

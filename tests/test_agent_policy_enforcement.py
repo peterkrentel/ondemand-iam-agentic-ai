@@ -13,12 +13,13 @@ Per spec, agents MUST:
 4. Emit policy_check audit events
 5. Respect policy decisions (deny if policy says no)
 """
+
 import re
 import pytest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent
-AGENTS_DIR = REPO_ROOT / 'agents'
+AGENTS_DIR = REPO_ROOT / "agents"
 
 
 def get_agent_files():
@@ -26,7 +27,7 @@ def get_agent_files():
     agents = []
     for agent_dir in AGENTS_DIR.iterdir():
         if agent_dir.is_dir():
-            agent_file = agent_dir / 'agent.py'
+            agent_file = agent_dir / "agent.py"
             if agent_file.exists():
                 agents.append(agent_file)
     return agents
@@ -51,8 +52,9 @@ class TestAgentLoadsPolicyFile:
 
         for agent_path in agent_files:
             source = get_agent_source(agent_path)
-            assert 'import yaml' in source or 'from yaml' in source, \
-                f"{agent_path}: Agent must import yaml to load policy files"
+            assert (
+                "import yaml" in source or "from yaml" in source
+            ), f"{agent_path}: Agent must import yaml to load policy files"
 
     def test_agents_reference_policy_path(self, agent_files):
         """Agents must reference the policy file path."""
@@ -62,8 +64,9 @@ class TestAgentLoadsPolicyFile:
         for agent_path in agent_files:
             source = get_agent_source(agent_path)
             # Must reference .github/agent-policies/ somewhere
-            assert 'agent-policies' in source or 'POLICY_PATH' in source, \
-                f"{agent_path}: Agent must reference policy file path"
+            assert (
+                "agent-policies" in source or "POLICY_PATH" in source
+            ), f"{agent_path}: Agent must reference policy file path"
 
     def test_agents_have_policy_enforcer(self, agent_files):
         """Agents must have a PolicyEnforcer or equivalent."""
@@ -74,13 +77,12 @@ class TestAgentLoadsPolicyFile:
             source = get_agent_source(agent_path)
             # Must have policy enforcement class/function
             has_enforcer = (
-                'PolicyEnforcer' in source or
-                'policy_check' in source or
-                '_check_policy' in source or
-                'check_policy' in source
+                "PolicyEnforcer" in source
+                or "policy_check" in source
+                or "_check_policy" in source
+                or "check_policy" in source
             )
-            assert has_enforcer, \
-                f"{agent_path}: Agent must have policy enforcement (PolicyEnforcer or check_policy)"
+            assert has_enforcer, f"{agent_path}: Agent must have policy enforcement (PolicyEnforcer or check_policy)"
 
 
 class TestAgentChecksPolicyBeforeActions:
@@ -100,11 +102,11 @@ class TestAgentChecksPolicyBeforeActions:
 
             # Find AWS operations (boto3 calls)
             aws_patterns = [
-                r'\.create_bucket\(',
-                r'\.delete_bucket\(',
-                r'\.put_object\(',
-                r'\.delete_object\(',
-                r'\.put_bucket_lifecycle',
+                r"\.create_bucket\(",
+                r"\.delete_bucket\(",
+                r"\.put_object\(",
+                r"\.delete_object\(",
+                r"\.put_bucket_lifecycle",
             ]
 
             for pattern in aws_patterns:
@@ -113,20 +115,21 @@ class TestAgentChecksPolicyBeforeActions:
                     # Get the 1500 chars before this AWS call
                     # (enough to cover config setup between policy check and call)
                     start = max(0, match.start() - 1500)
-                    context_before = source[start:match.start()]
+                    context_before = source[start : match.start()]  # noqa: E203
 
                     # Must have policy check before AWS call
                     has_policy_check = (
-                        '_require_policy' in context_before or
-                        '_check_policy' in context_before or
-                        'policy.check' in context_before or
-                        'PolicyEnforcer' in context_before
+                        "_require_policy" in context_before
+                        or "_check_policy" in context_before
+                        or "policy.check" in context_before
+                        or "PolicyEnforcer" in context_before
                     )
 
-                    assert has_policy_check, \
-                        f"{agent_path}: AWS call '{pattern}' at position {match.start()} " \
-                        f"must have policy check before it. " \
+                    assert has_policy_check, (
+                        f"{agent_path}: AWS call '{pattern}' at position {match.start()} "
+                        f"must have policy check before it. "
                         f"See specs/gha-agent-runtime.md for requirements."
+                    )
 
 
 class TestAgentEmitsPolicyEvents:
@@ -143,8 +146,9 @@ class TestAgentEmitsPolicyEvents:
 
         for agent_path in agent_files:
             source = get_agent_source(agent_path)
-            assert 'POLICY_CHECK' in source or 'policy_check' in source, \
-                f"{agent_path}: Agent must emit POLICY_CHECK audit events"
+            assert (
+                "POLICY_CHECK" in source or "policy_check" in source
+            ), f"{agent_path}: Agent must emit POLICY_CHECK audit events"
 
     def test_agents_handle_denied_status(self, agent_files):
         """Agents must handle DENIED status for policy violations."""
@@ -153,7 +157,5 @@ class TestAgentEmitsPolicyEvents:
 
         for agent_path in agent_files:
             source = get_agent_source(agent_path)
-            has_denied = 'DENIED' in source or 'denied' in source.lower()
-            assert has_denied, \
-                f"{agent_path}: Agent must handle DENIED status for policy violations"
-
+            has_denied = "DENIED" in source or "denied" in source.lower()
+            assert has_denied, f"{agent_path}: Agent must handle DENIED status for policy violations"
