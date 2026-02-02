@@ -22,6 +22,7 @@ class ActionType(str, Enum):
     FILE_READ = "file_read"
     FILE_WRITE = "file_write"
     API_CALL = "api_call"
+    POLICY_CHECK = "policy_check"  # AIMgentix policy evaluation
 
 
 class EventStatus(str, Enum):
@@ -29,6 +30,7 @@ class EventStatus(str, Enum):
     SUCCESS = "success"
     ERROR = "error"
     PENDING = "pending"
+    DENIED = "denied"  # Policy denied the action
 
 
 class AuditEvent(BaseModel):

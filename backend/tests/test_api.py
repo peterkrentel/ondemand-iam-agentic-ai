@@ -118,7 +118,7 @@ def test_actor_types():
 
 def test_action_types():
     """Test different action types"""
-    action_types = ["tool_call", "http_request", "db_query", "file_read", "file_write", "api_call"]
+    action_types = ["tool_call", "http_request", "db_query", "file_read", "file_write", "api_call", "policy_check"]
     
     for i, action_type in enumerate(action_types):
         event_data = {

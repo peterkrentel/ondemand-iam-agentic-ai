@@ -33,29 +33,31 @@ class TestEnumValues:
         assert ActionType.FILE_READ.value == "file_read"
         assert ActionType.FILE_WRITE.value == "file_write"
         assert ActionType.API_CALL.value == "api_call"
-        
+        assert ActionType.POLICY_CHECK.value == "policy_check"
+
         # Verify all expected values exist
         action_values = {e.value for e in ActionType}
         assert action_values == {
             "tool_call", "http_request", "db_query",
-            "file_read", "file_write", "api_call"
+            "file_read", "file_write", "api_call", "policy_check"
         }
-    
+
     def test_event_status_values(self):
         """Verify EventStatus enum values"""
         assert EventStatus.SUCCESS.value == "success"
         assert EventStatus.ERROR.value == "error"
         assert EventStatus.PENDING.value == "pending"
-        
+        assert EventStatus.DENIED.value == "denied"
+
         # Verify all expected values exist
         status_values = {e.value for e in EventStatus}
-        assert status_values == {"success", "error", "pending"}
-    
+        assert status_values == {"success", "error", "pending", "denied"}
+
     def test_enum_counts(self):
         """Verify enum counts match expected values"""
         assert len(ActorType) == 3, "ActorType should have exactly 3 values"
-        assert len(ActionType) == 6, "ActionType should have exactly 6 values"
-        assert len(EventStatus) == 3, "EventStatus should have exactly 3 values"
+        assert len(ActionType) == 7, "ActionType should have exactly 7 values"
+        assert len(EventStatus) == 4, "EventStatus should have exactly 4 values"
 
 
 class TestAuditEventContract:
