@@ -38,15 +38,24 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 def _sanitize_for_log(value):
     """
-    Remove newline and carriage-return characters from values before logging.
-    This helps prevent log injection when logging user-controlled data.
+    Remove characters that could inject or forge log entries.
+    This prevents log injection when logging user-controlled data.
     """
     if value is None:
         return value
     if not isinstance(value, str):
         value = str(value)
-    # Strip CR/LF and other control characters below ASCII 32
-    return "".join(ch for ch in value if ord(ch) >= 32 or ch in ("\t",))
+    # Characters that can create new lines or separate log entries
+    dangerous_chars = {
+        "\r",  # Carriage return
+        "\n",  # Line feed
+        "\x0b",  # Vertical tab
+        "\x0c",  # Form feed
+        "\x85",  # NEL (Next Line)
+        "\u2028",  # Unicode line separator
+        "\u2029",  # Unicode paragraph separator
+    }
+    return "".join(ch for ch in value if ch not in dangerous_chars)
 
 
 @asynccontextmanager
