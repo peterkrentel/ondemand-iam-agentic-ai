@@ -1,0 +1,345 @@
+name: Agent Runtime - Investigate & Act
+
+# This workflow implements the GitHub Actions agent runtime pattern:
+# Investigate (read-only) → Approve (gate) → Act (elevated permissions)
+#
+# Design principles:
+# - Ephemeral compute (GitHub-hosted runners)
+# - Explicit permission boundaries (job-level)
+# - Complete audit trail (AIMgentix integration)
+# - Human approval gates (environment protection)
+#
+# Spec: specs/github-actions-agent-runtime.md
+
+on:
+  workflow_dispatch:
+    inputs:
+      trigger_source:
+        description: 'Trigger source (manual/alert/schedule)'
+        required: true
+        default: 'manual'
+        type: choice
+        options:
+          - manual
+          - alert
+          - schedule
+      trace_id:
+        description: 'Unique trace ID for audit correlation'
+        required: true
+        type: string
+      resource:
+        description: 'Target resource to investigate/act on'
+        required: true
+        type: string
+      action_context:
+        description: 'Additional context (JSON string, optional)'
+        required: false
+        type: string
+        default: '{}'
+
+jobs:
+  # JOB 1: INVESTIGATE (Read-Only)
+  # Purpose: Analyze situation without making changes
+  # Permissions: Minimal (contents: read only)
+  investigate:
+    name: Investigate (Read-Only)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read  # Read-only - cannot modify anything
+    
+    outputs:
+      recommendation: ${{ steps.analyze.outputs.recommendation }}
+      safe_to_proceed: ${{ steps.analyze.outputs.safe_to_proceed }}
+      confidence_score: ${{ steps.analyze.outputs.confidence_score }}
+      investigation_summary: ${{ steps.analyze.outputs.investigation_summary }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install AIMgentix SDK
+        run: |
+          cd sdk
+          pip install -e .
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq bc
+      
+      - name: Initialize Audit Trail
+        id: audit-init
+        run: |
+          echo "trace_id=${{ inputs.trace_id }}" >> $GITHUB_OUTPUT
+          echo "agent_instance_id=gh-actions-${{ github.run_id }}" >> $GITHUB_OUTPUT
+          echo "📋 Audit Trail Initialized"
+          echo "  Trace ID: ${{ inputs.trace_id }}"
+          echo "  Agent Instance: gh-actions-${{ github.run_id }}"
+          echo "  Resource: ${{ inputs.resource }}"
+      
+      - name: Run Investigation Agent
+        id: analyze
+        env:
+          TRACE_ID: ${{ inputs.trace_id }}
+          AGENT_INSTANCE_ID: gh-actions-${{ github.run_id }}
+          TARGET_RESOURCE: ${{ inputs.resource }}
+          ACTION_CONTEXT: ${{ inputs.action_context }}
+          TRIGGER_SOURCE: ${{ inputs.trigger_source }}
+        run: |
+          # Use the agent runner script
+          python agent_runner.py investigate \
+            --resource "$TARGET_RESOURCE" \
+            --trace-id "$TRACE_ID" \
+            --agent-id "$AGENT_INSTANCE_ID" \
+            --context "$ACTION_CONTEXT" \
+            --output-file investigation-report.json
+          
+          # Parse results for GitHub Actions outputs
+          RECOMMENDATION=$(jq -r '.recommendation' investigation-report.json)
+          SAFE=$(jq -r '.safe_to_proceed' investigation-report.json)
+          CONFIDENCE=$(jq -r '.confidence' investigation-report.json)
+          RISK=$(jq -r '.risk_level' investigation-report.json)
+          
+          echo "recommendation=$RECOMMENDATION" >> $GITHUB_OUTPUT
+          echo "safe_to_proceed=$SAFE" >> $GITHUB_OUTPUT
+          echo "confidence_score=$CONFIDENCE" >> $GITHUB_OUTPUT
+          echo "investigation_summary=$RISK risk, $(echo "$CONFIDENCE * 100" | bc | cut -d. -f1)% confident" >> $GITHUB_OUTPUT
+      
+      - name: Upload Investigation Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: investigation-report
+          path: investigation-report.json
+          retention-days: 30
+      
+      - name: Save Trace ID Artifact
+        run: |
+          echo "${{ inputs.trace_id }}" > audit-trace-id.txt
+          echo "Resource: ${{ inputs.resource }}" >> audit-trace-id.txt
+          echo "Run ID: ${{ github.run_id }}" >> audit-trace-id.txt
+      
+      - name: Upload Trace ID
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-trace-id
+          path: audit-trace-id.txt
+          retention-days: 90
+
+  # JOB 2: APPROVE (Human Gate)
+  # Purpose: Review investigation and approve/reject action
+  # Permissions: None (approval only)
+  approve:
+    name: Approve Action
+    needs: investigate
+    runs-on: ubuntu-latest
+    permissions: {}  # No permissions needed - approval only
+    environment:
+      name: agent-approval
+      url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    
+    steps:
+      - name: Display Investigation Results
+        run: |
+          echo "## 🔍 Investigation Results"
+          echo ""
+          echo "**Recommendation**: ${{ needs.investigate.outputs.recommendation }}"
+          echo "**Safe to Proceed**: ${{ needs.investigate.outputs.safe_to_proceed }}"
+          echo "**Confidence Score**: ${{ needs.investigate.outputs.confidence_score }}"
+          echo "**Summary**: ${{ needs.investigate.outputs.investigation_summary }}"
+          echo ""
+          echo "---"
+          echo ""
+          echo "**Resource**: ${{ inputs.resource }}"
+          echo "**Trace ID**: ${{ inputs.trace_id }}"
+          echo "**Trigger**: ${{ inputs.trigger_source }}"
+          echo ""
+          echo "⚠️  **Review the investigation report before approving**"
+          echo "📊 Download artifacts from the investigate job to see full details"
+      
+      - name: Check Auto-Approval Criteria
+        id: auto-approve-check
+        run: |
+          # Auto-approve only if confidence is very high and risk is very low
+          SAFE="${{ needs.investigate.outputs.safe_to_proceed }}"
+          CONFIDENCE="${{ needs.investigate.outputs.confidence_score }}"
+          
+          if [ "$SAFE" = "true" ] && [ "$(echo "$CONFIDENCE > 0.95" | bc)" -eq 1 ]; then
+            echo "auto_approved=true" >> $GITHUB_OUTPUT
+            echo "✅ Auto-approval criteria met (confidence > 95%)"
+          else
+            echo "auto_approved=false" >> $GITHUB_OUTPUT
+            echo "⏸️  Manual approval required"
+          fi
+
+  # JOB 3: ACT (Elevated Permissions)
+  # Purpose: Execute the approved action
+  # Permissions: Scoped write access
+  act:
+    name: Execute Action
+    needs: [investigate, approve]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Elevated - can make changes
+      issues: write    # Can update issues if needed
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install AIMgentix SDK
+        run: |
+          cd sdk
+          pip install -e .
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq bc
+      
+      - name: Download Investigation Report
+        uses: actions/download-artifact@v4
+        with:
+          name: investigation-report
+      
+      - name: Execute Approved Action
+        id: execute
+        env:
+          TRACE_ID: ${{ inputs.trace_id }}
+          AGENT_INSTANCE_ID: gh-actions-${{ github.run_id }}
+          TARGET_RESOURCE: ${{ inputs.resource }}
+          RECOMMENDATION: ${{ needs.investigate.outputs.recommendation }}
+        run: |
+          # Use the agent runner script
+          python agent_runner.py act \
+            --resource "$TARGET_RESOURCE" \
+            --trace-id "$TRACE_ID" \
+            --agent-id "$AGENT_INSTANCE_ID" \
+            --action "$RECOMMENDATION" \
+            --output-file action-result.json
+          
+          # Parse results for GitHub Actions outputs
+          STATUS=$(jq -r '.status' action-result.json)
+          LATENCY=$(jq -r '.latency_ms' action-result.json)
+          
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "latency_ms=$LATENCY" >> $GITHUB_OUTPUT
+      
+      - name: Upload Action Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: action-result
+          path: action-result.json
+          retention-days: 30
+      
+      - name: Create Summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # 🎯 Agent Action Complete
+          
+          ## Investigation Phase
+          - **Resource**: ${{ inputs.resource }}
+          - **Recommendation**: ${{ needs.investigate.outputs.recommendation }}
+          - **Confidence**: ${{ needs.investigate.outputs.confidence_score }}
+          
+          ## Execution Phase  
+          - **Status**: ${{ steps.execute.outputs.status }}
+          - **Latency**: ${{ steps.execute.outputs.latency_ms }}ms
+          
+          ## Audit Trail
+          - **Trace ID**: ${{ inputs.trace_id }}
+          - **Agent Instance**: gh-actions-${{ github.run_id }}
+          - **Trigger**: ${{ inputs.trigger_source }}
+          
+          ---
+          
+          ✅ **Complete audit trail available via AIMgentix**
+          
+          View artifacts for detailed reports.
+          EOF
+
+  # JOB 4: SUMMARIZE (Always runs)
+  # Purpose: Create final summary regardless of success/failure
+  summarize:
+    name: Summarize Workflow
+    needs: [investigate, approve, act]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read  # Read-only for summary generation
+    
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: Create Workflow Summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # 📊 Agent Workflow Summary
+          
+          ## Workflow Details
+          - **Run ID**: ${{ github.run_id }}
+          - **Trace ID**: ${{ inputs.trace_id }}
+          - **Resource**: ${{ inputs.resource }}
+          - **Trigger**: ${{ inputs.trigger_source }}
+          
+          ## Job Status
+          - **Investigate**: ${{ needs.investigate.result }}
+          - **Approve**: ${{ needs.approve.result }}
+          - **Act**: ${{ needs.act.result }}
+          
+          ## Investigation Results
+          - **Recommendation**: ${{ needs.investigate.outputs.recommendation }}
+          - **Safe to Proceed**: ${{ needs.investigate.outputs.safe_to_proceed }}
+          - **Summary**: ${{ needs.investigate.outputs.investigation_summary }}
+          
+          ## Artifacts
+          All workflow artifacts are available for 30 days:
+          - Investigation report
+          - Action result (if executed)
+          - Audit trace ID
+          
+          ---
+          
+          **Audit Trail**: All events logged to AIMgentix with trace ID \`${{ inputs.trace_id }}\`
+          EOF
+      
+      - name: Generate Machine-Readable Summary
+        run: |
+          cat > workflow-summary.json << EOF
+          {
+            "workflow_run_id": "${{ github.run_id }}",
+            "trace_id": "${{ inputs.trace_id }}",
+            "resource": "${{ inputs.resource }}",
+            "trigger_source": "${{ inputs.trigger_source }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "results": {
+              "investigate": "${{ needs.investigate.result }}",
+              "approve": "${{ needs.approve.result }}",
+              "act": "${{ needs.act.result }}"
+            },
+            "investigation": {
+              "recommendation": "${{ needs.investigate.outputs.recommendation }}",
+              "safe_to_proceed": "${{ needs.investigate.outputs.safe_to_proceed }}",
+              "summary": "${{ needs.investigate.outputs.investigation_summary }}"
+            }
+          }
+          EOF
+          
+          cat workflow-summary.json
+      
+      - name: Upload Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-summary
+          path: workflow-summary.json
+          retention-days: 90
