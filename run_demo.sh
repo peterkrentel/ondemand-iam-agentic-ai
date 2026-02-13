@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Sentinel Demo Runner
+# AIMgentix Demo Runner
 # This script sets up and runs the complete demo
 
 set -e
 
-echo "🛡️  Sentinel Audit - Demo Setup"
+echo "🛡️  AIMgentix - Demo Setup"
 echo "================================"
 echo ""
 
