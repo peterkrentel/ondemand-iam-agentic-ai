@@ -387,7 +387,8 @@ def main():
         trace_id=trace_id,
         agent_instance_id=agent_id
     )
-    
+
+    output = None
     try:
         if args.command == 'investigate':
             result = runner.investigate(args.resource, context)
