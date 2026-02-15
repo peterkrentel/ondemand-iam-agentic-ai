@@ -1,7 +1,7 @@
-# GitHub Actions Agent Runtime Spec (v1)
+# GitHub Actions Agent Runtime Spec (v1.1)
 
 **Status**: Active
-**Last Updated**: 2026-02-01
+**Last Updated**: 2026-02-13
 **Applies To**: Agent workflows, SDK integration, policy enforcement
 **Why This Exists**: Agents need ephemeral compute, scoped permissions, and audit trails. GitHub Actions provides all three.
 **Validation**: `.github/workflows/` structure, `tests/test_workflow_contracts.py`
@@ -126,11 +126,19 @@ permissions:
 
 **Purpose**: Gate between investigation and action
 
-**Permissions**: None required (gate only)
+**Permissions**: Minimal (for SDK logging only)
+```yaml
+permissions:
+  contents: read  # For checkout if needed
+  # id-token: write  # Only if SDK logs to external service via OIDC
+```
+
+> **Note**: APPROVE phase evaluates rate limits and policy rules. INVESTIGATE outputs `risk_level` and `proposed_action`, but does not track rate-limit state. APPROVE must query current rate-limit usage before auto-approving.
 
 **Requirements**:
 - MUST use GitHub environment with protection rules
 - MUST block if `risk_level` is `high` or `critical` (require human review)
+- MUST evaluate rate limits before auto-approving
 - MAY auto-approve if `risk_level` is `low` and policy allows
 - MUST log approval decision via AIMgentix SDK
 
@@ -147,8 +155,11 @@ permissions:
 ```yaml
 permissions:
   contents: write  # Only if needed
+  id-token: write  # For AWS OIDC
   # Minimum required for the action
 ```
+
+> **Note**: ACT phase permissions vary by agent and action type. The examples in this spec use minimal permissions for simplicity. Real agents may require additional permissions (e.g., `issues: write`, `deployments: write`).
 
 **Requirements**:
 - MUST only execute the approved action (no deviation)
@@ -289,6 +300,17 @@ Each phase MUST output structured JSON artifacts:
 - Artifacts MUST be retained for at least 90 days
 - Artifacts MUST be uploaded even on failure
 
+**Explicit Retention Configuration**:
+```yaml
+- uses: actions/upload-artifact@v4
+  with:
+    name: findings
+    path: findings.json
+    retention-days: 90
+```
+
+> **Note**: GitHub Actions artifact retention defaults vary by plan. Always set `retention-days` explicitly to ensure compliance.
+
 ---
 
 ## Policy Definition
@@ -339,6 +361,40 @@ auto_approve:
 4. Check `requires_approval` - if true, require gate
 5. Otherwise, ALLOW
 
+### Policy Enforcement Layers
+
+There are three distinct enforcement mechanisms:
+
+| Layer | Source | Purpose |
+|-------|--------|---------|
+| `requires_approval` | Policy file | Action-level override (e.g., `DeleteBucket` always needs approval) |
+| `risk_level` | Runtime output | Context-based override (e.g., high-risk findings require review) |
+| Environment protection | GitHub settings | Enforcement mechanism (required reviewers, wait timers) |
+
+**How they interact**:
+- `requires_approval: true` in policy → ALWAYS require human approval
+- `risk_level: high/critical` from INVESTIGATE → ALWAYS require human approval
+- Both low `risk_level` AND action not in `requires_approval` → MAY auto-approve per policy
+
+### Multi-Action Proposals
+
+If an agent proposes multiple actions:
+
+```json
+{
+  "proposed_actions": [
+    { "type": "s3:CreateBucket", "parameters": {...} },
+    { "type": "s3:PutObject", "parameters": {...} }
+  ]
+}
+```
+
+Policy evaluation rules for batches:
+- Each action is evaluated individually
+- If ANY action is denied → entire batch is DENIED
+- If ANY action requires approval → entire batch requires approval
+- Rate limits are checked per-action (all must pass)
+
 ---
 
 ## Approval Gate Semantics
@@ -377,6 +433,66 @@ ELSE:
 
 - If no approval within 24 hours, workflow MUST fail
 - Timeout is configurable per environment
+
+---
+
+## Security Requirements
+
+### Replay Protection
+
+Agents MUST NOT be able to:
+- Re-run ACT phase with stale approvals
+- Reuse artifacts from previous workflow runs
+- Replay findings to bypass approval
+
+**Enforcement**:
+- Each approval is scoped to specific `run_id` and `run_attempt`
+- ACT phase MUST verify `trace_id` matches current run
+- Artifacts include timestamps and are validated for freshness
+
+### No Self-Mutation
+
+Agents MUST NOT modify:
+- Workflow files (`.github/workflows/`)
+- Policy files (`.github/agent-policies/`)
+- Environment protection rules
+
+**Enforcement**:
+- ACT phase permissions MUST NOT include `contents: write` to `.github/` paths
+- CI validation fails if agent proposes changes to protected paths
+- Pull requests from agent workflows require additional human review
+
+### Policy Version Pinning
+
+Agents MUST evaluate policies using:
+- The policy file version at the commit SHA that triggered the workflow
+- NOT the latest version on the default branch
+
+**Enforcement**:
+- Policy engine reads from `$GITHUB_SHA`, not `HEAD`
+- Prevents privilege escalation via policy changes during workflow execution
+- Prevents retroactive policy weakening
+
+---
+
+## v1 vs v2 Scope
+
+This spec defines v1: **pattern + CI enforcement**.
+
+| Capability | v1 (Current) | v2 (Future) |
+|------------|--------------|-------------|
+| Three-phase pattern | ✅ | ✅ |
+| Permission scoping | ✅ Per-job `permissions:` | Separate IAM roles per phase |
+| Policy enforcement | ✅ CI validation | Runtime policy engine |
+| Payload integrity | ✅ Artifact-based | Hash verification / signing |
+| Rate limiting | ✅ Per-workflow tracking | Cross-run state store |
+| Approval gates | ✅ GitHub environments | Dynamic environment selection |
+
+**v2 would add**:
+- Separate AWS IAM roles for INVESTIGATE (read-only) vs ACT (write)
+- Cryptographic hash of approved action payload, verified before execution
+- External rate limit state store (DynamoDB/Redis) for cross-run enforcement
+- Runtime policy engine that blocks unauthorized actions (not just CI validation)
 
 ---
 
@@ -439,6 +555,7 @@ jobs:
         with:
           name: findings
           path: findings.json
+          retention-days: 90
 
   approve:
     needs: investigate
@@ -461,6 +578,7 @@ jobs:
         with:
           name: results
           path: results.json
+          retention-days: 90
 ```
 
 ### WF-2: ❌ Invalid Workflow (No Gate)
